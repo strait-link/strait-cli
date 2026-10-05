@@ -1,0 +1,8 @@
+name: acme_shop
+description: A Flutter app.
+version: 1.0.0+1
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter

@@ -1,0 +1,2 @@
+{ "expo": { "name": "Acme Expo", "slug": "acme-expo", "scheme": "acmeexpo",
+  "android": { "package": "com.acme.expo" }, "ios": { "bundleIdentifier": "com.acme.expo" } } }
