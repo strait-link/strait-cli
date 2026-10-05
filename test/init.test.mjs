@@ -62,6 +62,8 @@ test('Flutter: lib/links.dart, pubspec install from the constant, manifest alrea
   const dart = readFileSync(join(dir, 'lib/links.dart'), 'utf8');
   assert.match(dart, new RegExp(`publishableKey: '${KEY}'`));
   assert.match(dart, /links\.onLink\.listen/);
+  assert.match(dart, /\(strait_sdk 0\.8\.1\)/, 'header names the Flutter SDK version');
+  assert.match(r.out, /ref: v0\.8\.1\n/);
   for (const line of installSpecs().flutterPubspec.split('\n')) assert.ok(r.out.includes(`    ${line}\n`), line);
   assert.match(r.out, /intent filters for acme\.strait\.link and acmeflutter:\/\/ are already there/);
   assert.match(r.out, /flutter_deeplinking_enabled" android:value="false"/);

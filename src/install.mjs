@@ -13,8 +13,9 @@ export const INSTALL = {
 
 /** SDK versions the generated code is written for (site.config.json packages). */
 export const VERSIONS = {
-  version: '0.8.0', // React Native, Swift, Flutter, Unity
+  version: '0.8.0', // Swift, Unity
   rnVersion: '0.8.1',
+  flutterVersion: '0.8.1',
   androidVersion: '0.7.2',
 };
 
@@ -31,8 +32,8 @@ export function installSpecs(src = INSTALL, v = VERSIONS) {
   return {
     reactNative: reg ? `${PACKAGES.reactNative}@${v.rnVersion}` : `github:${o}/strait-sdk-react-native#v${v.rnVersion}`,
     flutterPubspec: reg
-      ? `  ${PACKAGES.flutter}: ^${v.version}`
-      : `  ${PACKAGES.flutter}:\n    git:\n      url: ${gh('strait-sdk-flutter')}\n      ref: v${v.version}`,
+      ? `  ${PACKAGES.flutter}: ^${v.flutterVersion}`
+      : `  ${PACKAGES.flutter}:\n    git:\n      url: ${gh('strait-sdk-flutter')}\n      ref: v${v.flutterVersion}`,
     android: reg ? `in.straitlink:${PACKAGES.android}:${v.androidVersion}` : `com.github.${o}:${PACKAGES.android}:v${v.androidVersion}`,
     /** Extra Gradle repository the Android coordinate needs (null once on Maven Central). */
     androidRepository: reg ? null : 'https://jitpack.io',
