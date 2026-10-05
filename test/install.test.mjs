@@ -11,12 +11,12 @@ const walk = (d) => readdirSync(d).flatMap((n) => (n === 'node_modules' || n ===
 
 test('github and registry sources', () => {
   const gh = installSpecs({ source: 'github', githubOwner: 'strait-sdks' });
-  assert.equal(gh.reactNative, 'github:strait-sdks/strait-sdk-react-native#v0.8.0');
+  assert.equal(gh.reactNative, 'github:strait-sdks/strait-sdk-react-native#v0.8.1');
   assert.equal(gh.android, 'com.github.strait-sdks:strait-sdk-android:v0.7.2');
   assert.equal(gh.androidRepository, 'https://jitpack.io');
   assert.match(gh.flutterPubspec, /url: https:\/\/github\.com\/strait-sdks\/strait-sdk-flutter\n {6}ref: v0\.8\.0/);
   const reg = installSpecs({ ...INSTALL, source: 'registry' });
-  assert.equal(reg.reactNative, '@straitlink/react-native@0.8.0');
+  assert.equal(reg.reactNative, '@straitlink/react-native@0.8.1');
   assert.equal(reg.android, 'in.straitlink:strait-sdk-android:0.7.2');
   assert.equal(reg.flutterPubspec, '  strait_sdk: ^0.8.0');
   assert.equal(reg.androidRepository, null);
@@ -34,7 +34,7 @@ test('matches the site and dashboard constants when they sit next to this repo',
   if (existsSync(site)) {
     const cfg = JSON.parse(readFileSync(site, 'utf8'));
     if (cfg.install) assert.deepEqual({ source: cfg.install.source, githubOwner: cfg.install.githubOwner }, INSTALL);
-    assert.equal(cfg.packages.rnVersion, '0.8.0');
+    assert.equal(cfg.packages.rnVersion, '0.8.1');
     assert.equal(cfg.packages.androidVersion, '0.7.2');
   }
   if (existsSync(dash)) {
