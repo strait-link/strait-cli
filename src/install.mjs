@@ -14,7 +14,7 @@ export const INSTALL = {
 /** SDK versions the generated code is written for (site.config.json packages). */
 export const VERSIONS = {
   version: '0.8.0', // React Native, Swift, Flutter, Unity
-  rnVersion: '0.8.0',
+  rnVersion: '0.8.1',
   androidVersion: '0.7.2',
 };
 
