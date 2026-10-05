@@ -342,12 +342,19 @@ export function nextSteps(project, opts, installSrc) {
   // 3. Manifest
   if (fw !== 'expo') {
     const where = fw === 'android' ? 'app/src/main/AndroidManifest.xml' : 'android/app/src/main/AndroidManifest.xml';
-    const done = hasHost && hasScheme;
+    const flutterMeta = '<!-- Flutter only, inside <activity>: let the SDK handle links -->\n<meta-data android:name="flutter_deeplinking_enabled" android:value="false" />';
+    const needsFlutterMeta = fw === 'flutter' && !project.manifest.flutterDeepLinkingOff;
+    const filtersDone = hasHost && hasScheme;
+    const done = filtersDone && !needsFlutterMeta;
     steps.push({
       title: `Add the intent filters to ${where}`,
       done,
-      body: done ? `Already there: ${host} and ${scheme}://.` : 'Inside your main activity. Keep the intent filters you already have.',
-      code: done ? undefined : manifestXml(opts) + (fw === 'flutter' ? '\n<!-- Flutter only, inside <activity>: let the SDK handle links -->\n<meta-data android:name="flutter_deeplinking_enabled" android:value="false" />' : ''),
+      body: done
+        ? `Already there: ${host} and ${scheme}://.`
+        : filtersDone
+          ? `The intent filters for ${host} and ${scheme}:// are already there. Add this line inside your main activity:`
+          : 'Inside your main activity. Keep the intent filters you already have.',
+      code: done ? undefined : [filtersDone ? null : manifestXml(opts), needsFlutterMeta ? flutterMeta : null].filter(Boolean).join('\n'),
       lang: 'xml',
     });
     steps.push({ title: 'iPhone (beta)', body: `In Xcode add Associated Domains → applinks:${host}, and ${scheme} under Info → URL Types.${fw === 'flutter' ? ' Set FlutterDeepLinkingEnabled = NO in Info.plist.' : ''}` });

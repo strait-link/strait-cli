@@ -63,8 +63,19 @@ test('Flutter: lib/links.dart, pubspec install from the constant, manifest alrea
   assert.match(dart, new RegExp(`publishableKey: '${KEY}'`));
   assert.match(dart, /links\.onLink\.listen/);
   for (const line of installSpecs().flutterPubspec.split('\n')) assert.ok(r.out.includes(`    ${line}\n`), line);
-  assert.match(r.out, /Add the intent filters to android\/app\/src\/main\/AndroidManifest\.xml {2}\[already done\]/);
+  assert.match(r.out, /intent filters for acme\.strait\.link and acmeflutter:\/\/ are already there/);
+  assert.match(r.out, /flutter_deeplinking_enabled" android:value="false"/);
+  assert.doesNotMatch(r.out, /android:autoVerify/, 'filters already present are not printed again');
   assert.match(r.out, /FlutterDeepLinkingEnabled = NO/);
+});
+
+test('Flutter with filters and the meta-data already in the manifest: step marked done', async () => {
+  const dir = copyFixture('flutter-app');
+  const mf = join(dir, 'android/app/src/main/AndroidManifest.xml');
+  writeFileSync(mf, readFileSync(mf, 'utf8').replace('<intent-filter android:autoVerify', '<meta-data android:name="flutter_deeplinking_enabled" android:value="false" />\n      <intent-filter android:autoVerify'));
+  const r = await run(['init', dir, '--key', KEY, '--host', HOST]);
+  assert.equal(r.code, 0, r.err);
+  assert.match(r.out, /AndroidManifest\.xml {2}\[already done\]/);
 });
 
 test('Android (Kotlin): StraitLinks.kt in the app package, Gradle lines from the constant', async () => {
