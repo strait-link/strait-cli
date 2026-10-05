@@ -16,7 +16,8 @@ test('github and registry sources', () => {
   assert.equal(gh.androidRepository, 'https://jitpack.io');
   assert.match(gh.flutterPubspec, /url: https:\/\/github\.com\/strait-sdks\/strait-sdk-flutter\n {6}ref: v0\.8\.0/);
   const reg = installSpecs({ ...INSTALL, source: 'registry' });
-  assert.equal(reg.reactNative, '@strait/sdk-react-native@0.8.0');
+  assert.equal(reg.reactNative, '@straitlink/react-native@0.8.0');
+  assert.equal(reg.android, 'in.straitlink:strait-sdk-android:0.7.2');
   assert.equal(reg.flutterPubspec, '  strait_sdk: ^0.8.0');
   assert.equal(reg.androidRepository, null);
 });

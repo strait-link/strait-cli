@@ -2,6 +2,7 @@
 // commands run, nothing written).
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { PACKAGES } from './install.mjs';
 
 export const FRAMEWORKS = ['react-native', 'expo', 'flutter', 'android'];
 export const LABELS = { 'react-native': 'React Native', expo: 'Expo', flutter: 'Flutter', android: 'Android (Kotlin)' };
@@ -25,6 +26,9 @@ const readJson = (f) => {
 const first = (dir, names) => names.map((n) => join(dir, n)).find((p) => existsSync(p)) ?? null;
 
 /** applicationId (or namespace) from an app-module Gradle file. */
+// The React Native SDK under its npm name, or its pre-rename name (GitHub installs of older tags).
+const hasRnSdk = (deps) => Boolean(deps[PACKAGES.reactNative] || deps['@strait/sdk-react-native']);
+
 export function gradlePackage(text) {
   if (!text) return null;
   const m = /\bapplicationId\s*(?:=\s*)?["']([A-Za-z][\w.]*)["']/.exec(text) ?? /\bnamespace\s*(?:=\s*)?["']([A-Za-z][\w.]*)["']/.exec(text);
@@ -73,7 +77,7 @@ export function detectProject(dir) {
       androidPackage: expo.android?.package ?? null,
       iosBundleId: expo.ios?.bundleIdentifier ?? null,
       scheme: typeof scheme === 'string' ? scheme : null,
-      sdkInstalled: Boolean(deps['@strait/sdk-react-native']),
+      sdkInstalled: hasRnSdk(deps),
       dynamicConfig: !app && Boolean(first(dir, ['app.config.js', 'app.config.ts'])),
       androidDir: join(dir, 'android'),
     });
@@ -85,7 +89,7 @@ export function detectProject(dir) {
       typescript: existsSync(join(dir, 'tsconfig.json')),
       appName: readJson(join(dir, 'app.json'))?.name ?? pkg.name ?? null,
       androidPackage: gradlePackage(read(first(join(dir, 'android/app'), ['build.gradle', 'build.gradle.kts']) ?? '')),
-      sdkInstalled: Boolean(deps['@strait/sdk-react-native']),
+      sdkInstalled: hasRnSdk(deps),
       androidDir: join(dir, 'android'),
     });
   }

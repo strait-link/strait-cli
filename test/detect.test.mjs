@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { detectProject, gradlePackage, manifestLinks } from '../src/detect.mjs';
 import { FIXTURES } from './helpers.mjs';
 
@@ -65,4 +67,12 @@ test('gradlePackage reads Groovy and Kotlin DSL, prefers applicationId', () => {
 test('manifestLinks lists schemes and hosts once each', () => {
   const m = manifestLinks('<data android:scheme="https" android:host="a.b"/><data android:scheme="https" android:host="a.b"/>');
   assert.deepEqual(m, { schemes: ['https'], hosts: ['a.b'], flutterDeepLinkingOff: false });
+});
+
+test('React Native SDK counts as installed under its npm name or its pre-rename name', () => {
+  for (const name of ['@straitlink/react-native', '@strait/sdk-react-native']) {
+    const dir = mkdtempSync(join(tmpdir(), 'strait-detect-'));
+    writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'shop', dependencies: { 'react-native': '0.76.0', [name]: '0.8.0' } }));
+    assert.equal(detectProject(dir).sdkInstalled, true, name);
+  }
 });

@@ -26,8 +26,8 @@ Environment
   STRAIT_PUBLISHABLE_KEY, STRAIT_LINK_HOST are used when the flags are absent.
 
 Examples
-  npx @strait/cli init
-  npx @strait/cli init --key st_pub_live_… --host acme.strait.link --dry-run
+  npx @straitlink/cli init
+  npx @straitlink/cli init --key st_pub_live_… --host acme.strait.link --dry-run
 `;
 
 /**
