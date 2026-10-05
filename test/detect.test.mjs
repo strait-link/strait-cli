@@ -64,5 +64,5 @@ test('gradlePackage reads Groovy and Kotlin DSL, prefers applicationId', () => {
 
 test('manifestLinks lists schemes and hosts once each', () => {
   const m = manifestLinks('<data android:scheme="https" android:host="a.b"/><data android:scheme="https" android:host="a.b"/>');
-  assert.deepEqual(m, { schemes: ['https'], hosts: ['a.b'] });
+  assert.deepEqual(m, { schemes: ['https'], hosts: ['a.b'], flutterDeepLinkingOff: false });
 });

@@ -33,10 +33,11 @@ export function gradlePackage(text) {
 
 /** The scheme(s) and hosts already declared in an AndroidManifest.xml. */
 export function manifestLinks(text) {
-  if (!text) return { schemes: [], hosts: [] };
+  if (!text) return { schemes: [], hosts: [], flutterDeepLinkingOff: false };
   const schemes = [...text.matchAll(/android:scheme="([^"]+)"/g)].map((m) => m[1]);
   const hosts = [...text.matchAll(/android:host="([^"]+)"/g)].map((m) => m[1]);
-  return { schemes: [...new Set(schemes)], hosts: [...new Set(hosts)] };
+  const flutterDeepLinkingOff = /android:name="flutter_deeplinking_enabled"\s+android:value="false"/.test(text);
+  return { schemes: [...new Set(schemes)], hosts: [...new Set(hosts)], flutterDeepLinkingOff };
 }
 
 /** The Java/Kotlin source root for an Android app module, if it exists. */
