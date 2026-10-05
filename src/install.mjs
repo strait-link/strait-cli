@@ -19,7 +19,7 @@ export const VERSIONS = {
 };
 
 export const PACKAGES = {
-  reactNative: '@strait/sdk-react-native',
+  reactNative: '@straitlink/react-native',
   flutter: 'strait_sdk',
   android: 'strait-sdk-android',
 };
@@ -33,7 +33,7 @@ export function installSpecs(src = INSTALL, v = VERSIONS) {
     flutterPubspec: reg
       ? `  ${PACKAGES.flutter}: ^${v.version}`
       : `  ${PACKAGES.flutter}:\n    git:\n      url: ${gh('strait-sdk-flutter')}\n      ref: v${v.version}`,
-    android: reg ? `dev.strait:${PACKAGES.android}:${v.androidVersion}` : `com.github.${o}:${PACKAGES.android}:v${v.androidVersion}`,
+    android: reg ? `in.straitlink:${PACKAGES.android}:${v.androidVersion}` : `com.github.${o}:${PACKAGES.android}:v${v.androidVersion}`,
     /** Extra Gradle repository the Android coordinate needs (null once on Maven Central). */
     androidRepository: reg ? null : 'https://jitpack.io',
   };

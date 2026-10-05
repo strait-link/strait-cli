@@ -1,4 +1,4 @@
-# @strait/cli
+# @straitlink/cli
 
 `strait init` sets up Strait deep links in a React Native, Expo, Flutter or Android (Kotlin) app:
 
@@ -27,7 +27,7 @@ node bin/strait.mjs init ../my-app --key st_pub_live_… --host acme.strait.link
 npm link && strait init                               # or install the command globally
 ```
 
-Once it is published: `npx @strait/cli init`.
+Once it is published: `npx @straitlink/cli init`.
 
 | Option | |
 |---|---|
