@@ -1,0 +1,8 @@
+apply plugin: "com.android.application"
+android {
+    namespace "com.acme.shop"
+    defaultConfig {
+        applicationId "com.acme.shop"
+        minSdkVersion rootProject.ext.minSdkVersion
+    }
+}
