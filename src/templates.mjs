@@ -55,7 +55,7 @@ export function redirectSystemPath({ path }: { path: string; initial: boolean })
 
 function flutterLinks({ key, host }) {
   const f = PACKAGES.flutter;
-  return `// ${HEADER(f, VERSIONS.version)}
+  return `// ${HEADER(f, VERSIONS.flutterVersion)}
 // Call \`await startLinks();\` in main() before runApp.
 import 'dart:async';
 import 'dart:io' show Platform;
