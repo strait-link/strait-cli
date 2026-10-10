@@ -23,7 +23,13 @@ test('github and registry sources', () => {
 });
 
 test('the owner is spelled out only in src/install.mjs', () => {
-  const hits = walk(root).filter((f) => !f.endsWith(join('src', 'install.mjs')) && !f.endsWith('.md') && readFileSync(f, 'utf8').includes(INSTALL.githubOwner));
+  // package.json's repository/bugs name this CLI's own repo (npm provenance checks them), not the SDK repos.
+  const text = (f) => {
+    if (!f.endsWith(join(root, 'package.json'))) return readFileSync(f, 'utf8');
+    const { repository, bugs, ...rest } = JSON.parse(readFileSync(f, 'utf8'));
+    return JSON.stringify(rest);
+  };
+  const hits = walk(root).filter((f) => !f.endsWith(join('src', 'install.mjs')) && !f.endsWith('.md') && text(f).includes(INSTALL.githubOwner));
   assert.deepEqual(hits.map((f) => f.slice(root.length)), []);
 });
 

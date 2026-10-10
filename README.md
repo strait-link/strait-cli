@@ -1,4 +1,19 @@
-# @straitlink/cli
+<h1 align="center">Strait CLI</h1>
+
+<p align="center"><strong>Straight to the screen. On the record.</strong><br>
+One command sets up Strait deep links in your app. Every link open and install is then recorded in your Strait dashboard.</p>
+
+<p align="center">
+  <a href="https://straitlink.in/docs/">Docs</a> ·
+  <a href="https://straitlink.in/platform-status/">Platform status</a> ·
+  <a href="#docs-and-support">Talk to the Strait team</a>
+</p>
+
+`@straitlink/cli`
+
+```bash
+npx @straitlink/cli init
+```
 
 `strait init` sets up Strait deep links in a React Native, Expo, Flutter or Android (Kotlin) app:
 
@@ -19,15 +34,15 @@ It never edits your existing files and never overwrites an earlier integration f
 
 ## Use
 
-Not on npm yet. From this folder:
+Run it in your app's folder. Node 18.17 or newer; nothing to install first.
 
 ```bash
-node bin/strait.mjs init ../my-app --dry-run          # asks for the key and host
-node bin/strait.mjs init ../my-app --key st_pub_live_… --host acme.strait.link
-npm link && strait init                               # or install the command globally
+npx @straitlink/cli init                                         # asks for the key and host
+npx @straitlink/cli init --key st_pub_live_… --host acme.strait.link
+npx @straitlink/cli init ../my-app --dry-run                     # show the files and steps, write nothing
 ```
 
-Once it is published: `npx @straitlink/cli init`.
+From a checkout of this repo: `node bin/strait.mjs init ../my-app`, or `npm link && strait init`.
 
 | Option | |
 |---|---|
@@ -53,3 +68,14 @@ node scripts/time-to-first-link.mjs       # see docs/TIME-TO-FIRST-LINK.md
 ```
 
 Fixture apps live in `test/fixtures/` (bare React Native, Expo with and without Expo Router, Flutter, Kotlin, and a folder with no app).
+
+## Docs and support
+
+- **Docs:** [straitlink.in/docs/](https://straitlink.in/docs/) · [platform status](https://straitlink.in/platform-status/) · [troubleshooting](https://straitlink.in/docs/troubleshooting/)
+- **Talk to the Strait team:** [support@straitlink.in](mailto:support@straitlink.in) (replies within 1 working day, IST) or call +91 81218 61890.
+- **Bugs and feature requests:** [open an issue](https://github.com/bazingga08/strait-cli/issues) on this repo.
+- **Security:** never in a public issue. Write to security@straitlink.in.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).
