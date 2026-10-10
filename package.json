@@ -2,14 +2,35 @@
   "name": "@straitlink/cli",
   "version": "0.1.0",
   "description": "npx @straitlink/cli init: set up Strait deep links in a React Native, Expo, Flutter or Android app.",
+  "keywords": [
+    "strait",
+    "deep-linking",
+    "deferred-deep-linking",
+    "app-links",
+    "universal-links",
+    "react-native",
+    "expo",
+    "flutter",
+    "android",
+    "cli"
+  ],
+  "homepage": "https://straitlink.in/docs/",
+  "bugs": {
+    "url": "https://github.com/bazingga08/strait-cli/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bazingga08/strait-cli.git"
+  },
+  "license": "MIT",
+  "author": "The Strait team <support@straitlink.in>",
   "type": "module",
   "bin": {
     "strait": "bin/strait.mjs"
   },
   "files": [
-    "bin",
-    "src",
-    "README.md"
+    "bin/",
+    "src/"
   ],
   "scripts": {
     "test": "node --test test/*.test.mjs",
@@ -18,8 +39,6 @@
   "engines": {
     "node": ">=18.17"
   },
-  "license": "MIT",
-  "homepage": "https://straitlink.in",
   "publishConfig": {
     "access": "public",
     "provenance": true
