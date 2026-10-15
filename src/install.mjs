@@ -13,10 +13,10 @@ export const INSTALL = {
 
 /** SDK versions the generated code is written for (site.config.json packages). */
 export const VERSIONS = {
-  version: '0.8.0', // Swift, Unity
-  rnVersion: '0.8.1',
-  flutterVersion: '0.8.1',
-  androidVersion: '0.7.2',
+  version: '0.9.2', // Swift (Unity 0.8.5 is not written by this CLI)
+  rnVersion: '0.9.1',
+  flutterVersion: '0.9.2',
+  androidVersion: '0.8.0',
 };
 
 export const PACKAGES = {
