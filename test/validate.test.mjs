@@ -29,6 +29,28 @@ test('the docs example key and a cut-off key get plain messages, never a contrad
   assert.throws(() => normalizeKey('bk_live_123'), (e) => /is not a publishable key/.test(e.message) && /Dashboard → Get started/.test(e.message));
 });
 
+test('placeholders that look like keys are refused; real keys survive copy-paste noise (review 23 Oct)', () => {
+  const real = 'st_pub_live_3f9a0c1e2d4b5a6978a1b2c3d4e5f607';
+  // 8+ letters, so they pass the key shape, but they are stand-ins (incl. the site's screenshot mock key).
+  for (const example of ['st_pub_live_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 'st_pub_live_yourkeyhere', 'st_pub_live_8fK2mQx7Lp4RtZ']) {
+    assert.throws(() => normalizeKey(example), /is the example key from the docs/, example);
+  }
+  assert.equal(normalizeKey(`${real}.`), real, 'full stop copied from a sentence');
+  assert.equal(normalizeKey(`"${real}"`), real, 'quotes');
+  assert.equal(normalizeKey(`'${real}'`), real, 'single quotes');
+  assert.throws(() => normalizeKey(`st_pub_live_<${real.slice(12)}>`), /Remove the < >/);
+  assert.throws(() => normalizeKey('st_pub_live_3f9a0c1e2d4b5a69…'), /looks cut off/, 'shortened for display');
+  assert.throws(() => normalizeKey('st_pub_test_…'), (e) => /st_pub_test_ followed by/.test(e.message), 'help names the prefix typed');
+});
+
+test('a secret key is refused wherever it sits in the input, and never echoed', () => {
+  const secret = 'st_live_9b8a7c6d5e4f30211a2b3c4d5e6f7081';
+  for (const v of [`'${secret}'`, `"${secret}"`, `STRAIT_SECRET_KEY=${secret}`, `Bearer ${secret}`]) {
+    assert.throws(() => normalizeKey(v), (e) => /secret key/.test(e.message) && /rotate/.test(e.message) && !e.message.includes(secret.slice(8)), v);
+  }
+  assert.throws(() => normalizeKey('sk_live_abcdefghijkl123456'), (e) => !e.message.includes('abcdefghijkl123456'), 'other strings are not echoed either');
+});
+
 test('hosts are cleaned from a pasted link', () => {
   assert.equal(normalizeHost('https://Acme.Strait.link/summer?x=1'), 'acme.strait.link');
   assert.equal(normalizeHost('acme.strait.link.'), 'acme.strait.link');
