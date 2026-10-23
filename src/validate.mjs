@@ -4,12 +4,17 @@
 export class UsageError extends Error {}
 
 const PUB_KEY = /^st_pub_(live|test)_[A-Za-z0-9]{8,}$/;
-const SECRET_KEY = /^st_(live|test)_/;
+const SECRET_KEY = /st_(live|test)_/; // anywhere: quotes, KEY=…, "Bearer …" (a publishable key never contains it)
 const LABEL = /^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/;
+// Stand-ins seen in our docs and screenshots (site/scripts/dashboard-shots/mock-supabase.ts). Real keys are 32 hex.
+const EXAMPLE_BODIES = new Set(['8fK2mQx7Lp4RtZ']);
 
-/** A publishable key (st_pub_live_…). A secret key is refused: it must never ship in an app. */
+/**
+ * A publishable key (st_pub_live_…). A secret key is refused: it must never ship in an app.
+ * Nothing the person typed is echoed back except an st_pub_ key, which is safe to show.
+ */
 export function normalizeKey(value) {
-  const k = String(value ?? '').trim();
+  let k = String(value ?? '').trim().replace(/^['"]+|['"]+$/g, '');
   if (!k) throw new UsageError('A publishable key is required (--key st_pub_live_…). Find it in Dashboard → Get started.');
   if (SECRET_KEY.test(k)) {
     throw new UsageError(
@@ -17,20 +22,21 @@ export function normalizeKey(value) {
         'If the secret key was pasted somewhere public, rotate it in Dashboard → Settings → Secret keys.',
     );
   }
-  if (!PUB_KEY.test(k)) {
-    const where = 'Copy your real one from Dashboard → Get started (the Publishable key box): st_pub_live_ followed by 32 letters and numbers.';
-    const rest = /^st_pub_(?:live|test)_(.*)$/.exec(k)?.[1];
-    if (rest == null) throw new UsageError(`"${k}" is not a publishable key. ${where}`);
-    if (isExample(rest)) throw new UsageError(`"${k}" is the example key from the docs, not your key. ${where}`);
-    throw new UsageError(`"${k}" looks cut off. ${where}`);
+  const m = /^st_pub_(live|test)_(.*)$/.exec(k);
+  const where = (mode = 'live') => `Copy your real one from Dashboard → Get started (the Publishable key box): st_pub_${mode}_ followed by 32 letters and numbers.`;
+  if (!m) throw new UsageError(`That is not a publishable key. ${where()}`);
+  const [, mode] = m;
+  let rest = m[2].replace(/\.$/, ''); // a full stop copied from a sentence
+  const shortened = /(?:…|\.\.)$/.test(rest);
+  rest = rest.replace(/(?:…|\.)+$/, '');
+  const bracketed = /^<(.*)>$/.exec(rest)?.[1];
+  if (bracketed != null && /^[A-Za-z0-9]{8,}$/.test(bracketed)) throw new UsageError(`Remove the < > around your key: st_pub_${mode}_${bracketed}.`);
+  if (rest === '' || bracketed != null || /your/i.test(rest) || /^x{3,}$/i.test(rest) || EXAMPLE_BODIES.has(rest)) {
+    throw new UsageError(`"${k}" is the example key from the docs, not your key. ${where(mode)}`);
   }
-  return k;
-}
-
-/** The docs' placeholder (st_pub_live_…) or a "your key here" stand-in, as opposed to a real key cut short. */
-function isExample(rest) {
-  const r = rest.replace(/(?:…|\.)+$/, '');
-  return r === '' || /^<.*>$/.test(r) || /your/i.test(r) || /^x{3,}$/i.test(r);
+  const key = `st_pub_${mode}_${rest}`;
+  if (shortened || !PUB_KEY.test(key)) throw new UsageError(`"${k}" looks cut off. ${where(mode)}`);
+  return key;
 }
 
 /** "https://Acme.strait.link/summer" → "acme.strait.link". */

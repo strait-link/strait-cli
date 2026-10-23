@@ -293,6 +293,10 @@ export default function RootLayout() {
   return <Stack />;
 }`;
 
+// ops/IOS-STATUS-1022.md: iPhone links are live; install matching is opt-in (dashboard "iPhone installs", off until chosen).
+const IPHONE_INSTALLS =
+  'iPhone install matching is opt-in: choose a method in Dashboard → Settings → iPhone installs (device matching, paste or both; off until you choose) to land people on the link\'s screen after an App Store install.';
+
 const keytool = (fw) =>
   fw === 'expo'
     ? 'keytool -list -v -keystore android/app/debug.keystore -storepass android | grep SHA256   # local builds; EAS builds: eas credentials'
@@ -328,7 +332,7 @@ export function nextSteps(project, opts, installSrc) {
   // 2. Start it
   if (fw === 'react-native') steps.push({ title: 'Load links at startup', body: `Add \`import './links';\` to the top of index.js, then rebuild (npx react-native run-android). The SDK adds a native module, so a Metro reload is not enough.` });
   if (fw === 'expo') {
-    steps.push({ title: 'Add link settings to app.json (merge with what you have)', code: expoAppJson(opts, project), lang: 'json', body: project.dynamicConfig ? 'Your config is app.config.js/ts, so copy these keys into it by hand.' : undefined });
+    steps.push({ title: 'Add link settings to app.json (merge with what you have)', code: expoAppJson(opts, project), lang: 'json', body: `${project.dynamicConfig ? 'Your config is app.config.js/ts, so copy these keys into it by hand. ' : ''}associatedDomains opens links in your iPhone app. ${IPHONE_INSTALLS}` });
     if (project.expoRouter) steps.push({ title: 'Route links in app/_layout.tsx', code: EXPO_LAYOUT, lang: 'tsx' });
     else steps.push({ title: 'Load links at startup', body: "Add `import './links';` to your entry file." });
     steps.push({ title: 'Make a development build (Expo Go cannot load the native module)', code: 'npx expo run:android     # or: eas build --profile development --platform android', lang: 'bash' });
@@ -357,12 +361,12 @@ export function nextSteps(project, opts, installSrc) {
       code: done ? undefined : [filtersDone ? null : manifestXml(opts), needsFlutterMeta ? flutterMeta : null].filter(Boolean).join('\n'),
       lang: 'xml',
     });
-    steps.push({
-      title: 'iPhone',
-      body:
-        `In Xcode add Associated Domains → applinks:${host}, and ${scheme} under Info → URL Types.${fw === 'flutter' ? ' Set FlutterDeepLinkingEnabled = NO in Info.plist.' : ''} ` +
-        'Links then open your app on the right screen. iPhone install matching is opt-in: turn it on in Dashboard → Settings → iPhone installs (it starts off) to land people on that screen after an App Store install.',
-    });
+    if (fw !== 'android') {
+      steps.push({
+        title: 'iPhone',
+        body: `In Xcode add Associated Domains → applinks:${host}, and ${scheme} under Info → URL Types.${fw === 'flutter' ? ' Set FlutterDeepLinkingEnabled = NO in Info.plist.' : ''} Links then open your app on the right screen. ${IPHONE_INSTALLS}`,
+      });
+    }
   }
 
   // 4. Dashboard + verification files

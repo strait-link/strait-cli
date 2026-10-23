@@ -68,12 +68,21 @@ export function formatPlan(plan, { dryRun = false } = {}) {
   out.push(`Link host: ${opts.host} · scheme: ${opts.scheme}://${plan.schemeGuessedFrom ? ` (guessed from ${plan.schemeGuessedFrom})` : ''}`);
   if (plan.schemeGuessedFrom) {
     out.push(
-      'If you made up your own scheme (Custom scheme in Dashboard → Apps & stores), run this again with --scheme yourscheme' +
-        (dryRun ? ', so every line below uses it.' : ' --dry-run to print these steps with it (the file written does not contain the scheme, so keep it).'),
+      'If you made up your own scheme (Custom scheme in Dashboard → Apps & stores), ' +
+        (dryRun
+          ? 'run this again with --scheme yourscheme, so every line below uses it.'
+          : `use it in place of ${opts.scheme} in the steps below: the files written don't contain the scheme, so you don't need --force. ` +
+            'To reprint the steps with it, run this again with --scheme yourscheme --dry-run.'),
     );
   }
   out.push('');
-  out.push(dryRun ? 'Dry run: nothing written. These files would be created:' : 'Created:');
+  out.push(
+    !dryRun
+      ? 'Created:'
+      : plan.conflicts.length
+        ? `Dry run: nothing written. A real run would stop: ${plan.conflicts.join(', ')} already exists (add --force to replace it). With --force it would write:`
+        : 'Dry run: nothing written. These files would be created:',
+  );
   // A conflict is a file the real run refuses to overwrite (no --force): never call it replaced.
   const label = (f) => (plan.conflicts.includes(f.path) ? ' (already exists: kept unless --force)' : f.exists ? ' (replaced)' : '');
   for (const f of files) out.push(`  ${f.path}${label(f)}  ${f.why}`);

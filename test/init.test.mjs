@@ -33,7 +33,7 @@ test('React Native: writes links.ts with key, host and an onLink handler, prints
   // iPhone left beta 22 Oct 2026 (ops/IOS-STATUS-1022.md): no beta label; install matching is opt-in.
   assert.doesNotMatch(r.out, /beta/i);
   assert.match(r.out, /\n\d\. iPhone\n/);
-  assert.match(r.out, /install matching is opt-in: turn it on in Dashboard → Settings → iPhone installs/);
+  assert.match(r.out, /iPhone install matching is opt-in: choose a method in Dashboard → Settings → iPhone installs/);
   // App ids and fingerprints live in Apps & stores now, not Settings.
   assert.match(r.out, /Fill in Dashboard → Apps & stores/);
 });
@@ -50,6 +50,7 @@ test('Expo Router: links.ts + app/+native-intent.tsx, app.json block with intent
   assert.match(r.out, /router\.push/);
   assert.match(r.out, /npx expo run:android/);
   assert.doesNotMatch(r.out, /AndroidManifest\.xml/, 'Expo takes link settings in app.json');
+  assert.match(r.out, /iPhone install matching is opt-in/, 'Expo hears it too');
 });
 
 test('Expo without TypeScript gets links.js', async () => {
@@ -98,6 +99,7 @@ test('Android (Kotlin): StraitLinks.kt in the app package, Gradle lines from the
   assert.match(r.out, /maven\("https:\/\/jitpack\.io"\)/);
   assert.match(r.out, /StraitLinks\.init\(this\)/);
   assert.match(r.out, /<data android:scheme="https" android:host="acme\.strait\.link" \/>/);
+  assert.doesNotMatch(r.out, /Xcode/, 'a Kotlin Android app has no iPhone project');
 });
 
 test('--dry-run writes nothing and shows the file contents', async () => {
@@ -119,6 +121,9 @@ test('an existing integration file is kept unless --force', async () => {
   assert.equal(readFileSync(join(dir, 'links.ts'), 'utf8'), '// mine\n');
   const dry = await run(['init', dir, '--key', KEY, '--host', HOST, '--dry-run']);
   assert.match(dry.out, /already exists; a real run needs --force/);
+  // Say up front that the real run would stop, not "these files would be created" (review 23 Oct).
+  assert.match(dry.out, /Dry run: nothing written\. A real run would stop: links\.ts already exists \(add --force to replace it\)\./);
+  assert.doesNotMatch(dry.out, /These files would be created/);
   // The file line must not promise what the real run refuses (Q32, 23 Oct 2026).
   assert.doesNotMatch(dry.out, /links\.ts \(replaced\)/);
   assert.match(dry.out, /links\.ts \(already exists: kept unless --force\)/);
@@ -136,8 +141,11 @@ test('a guessed scheme is said out loud, and --scheme puts your own scheme every
     const guessed = await run(['init', dir, '--key', KEY, '--host', HOST, '--force', ...extra]);
     assert.equal(guessed.code, 0, guessed.err);
     assert.match(guessed.out, /scheme: acmeshop:\/\/ \(guessed from the package name com\.acme\.shop\)/);
-    assert.match(guessed.out, /If you made up your own scheme \(Custom scheme in Dashboard → Apps & stores\), run this again with --scheme yourscheme/);
+    assert.match(guessed.out, /If you made up your own scheme \(Custom scheme in Dashboard → Apps & stores\)/);
+    assert.match(guessed.out, /run this again with --scheme yourscheme/);
   }
+  const real = await run(['init', copyFixture('rn-bare'), '--key', KEY, '--host', HOST]);
+  assert.match(real.out, /the files written don't contain the scheme, so you don't need --force/);
   const own = await run(['init', dir, '--key', KEY, '--host', HOST, '--force', '--scheme', 'yourapp']);
   assert.equal(own.code, 0, own.err);
   assert.doesNotMatch(own.out, /guessed/);
@@ -179,8 +187,7 @@ test('in a terminal it asks, re-asks on a bad answer, and takes the suggested sc
   const r = await run(['init', dir], { isTTY: true, ask });
   assert.equal(r.code, 0, r.err);
   assert.equal(asked.length, 5);
-  assert.match(asked[4], /\[acmeshop\]/);
-  assert.match(asked[4], /Custom scheme in Dashboard → Apps & stores/);
+  assert.match(asked[4], /Custom scheme \(the one in Dashboard → Apps & stores\) \[acmeshop, guessed from the package name\]/);
   assert.match(r.err, /secret key/);
   assert.match(readFileSync(join(dir, 'links.ts'), 'utf8'), /acme\.strait\.link/);
 });

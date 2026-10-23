@@ -85,7 +85,8 @@ export async function main(argv, io = {}) {
         host = host ?? (await askValid(ask, 'Link host (e.g. acme.strait.link): ', normalizeHost, err));
         if (!scheme) {
           const guess = suggestScheme(detectProject(dir) ?? {});
-          scheme = await askValid(ask, `Custom scheme in Dashboard → Apps & stores${guess ? ` [${guess}]` : ''}: `, (a) => normalizeScheme(a || guess || ''), err);
+          const hint = guess ? ` [${guess}, guessed from the package name]` : '';
+          scheme = await askValid(ask, `Custom scheme (the one in Dashboard → Apps & stores)${hint}: `, (a) => normalizeScheme(a || guess || ''), err);
         }
       } finally {
         ask.close?.();
