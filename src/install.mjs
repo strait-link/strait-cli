@@ -10,7 +10,7 @@
 
 export const INSTALL = {
   source: { npm: 'registry', pub: 'registry', maven: 'github' },
-  githubOwner: 'bazingga08',
+  githubOwner: 'strait-link',
 };
 
 /** The source for one registry: `source` as one word applies to all three. */

@@ -73,7 +73,7 @@ Fixture apps live in `test/fixtures/` (bare React Native, Expo with and without 
 
 - **Docs:** [straitlink.in/docs/](https://straitlink.in/docs/) · [platform status](https://straitlink.in/platform-status/) · [troubleshooting](https://straitlink.in/docs/troubleshooting/)
 - **Talk to the Strait team:** [support@straitlink.in](mailto:support@straitlink.in) (replies within 1 working day, IST) or call +91 81218 61890.
-- **Bugs and feature requests:** [open an issue](https://github.com/bazingga08/strait-cli/issues) on this repo.
+- **Bugs and feature requests:** [open an issue](https://github.com/strait-link/strait-cli/issues) on this repo.
 - **Security:** never in a public issue. Write to security@straitlink.in.
 
 ## Licence
