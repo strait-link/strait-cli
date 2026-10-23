@@ -16,12 +16,15 @@ export const INSTALL = {
 /** The source for one registry: `source` as one word applies to all three. */
 export const sourceFor = (src, registry) => (typeof src.source === 'string' ? src.source : src.source[registry]);
 
-/** SDK versions the generated code is written for (site.config.json packages). */
+/**
+ * SDK versions the generated code is written for. Must equal site/site.config.json `packages`
+ * (the one source of truth; test/install.test.mjs fails if they differ). Bump both together.
+ */
 export const VERSIONS = {
-  version: '0.9.2', // Swift (Unity 0.8.5 is not written by this CLI)
-  rnVersion: '0.9.1',
-  flutterVersion: '0.9.2',
-  androidVersion: '0.8.0',
+  version: '0.9.3', // Swift (Unity is not written by this CLI)
+  rnVersion: '0.9.2',
+  flutterVersion: '0.9.3',
+  androidVersion: '0.8.1',
 };
 
 export const PACKAGES = {

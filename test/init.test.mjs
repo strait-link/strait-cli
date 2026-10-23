@@ -24,13 +24,18 @@ test('React Native: writes links.ts with key, host and an onLink handler, prints
   assert.match(links, /endpoint: 'https:\/\/acme\.strait\.link'/);
   assert.match(links, /links\.onLink\(\(e\) =>/);
   assert.match(links, /links\.start\(\);/);
-  assert.match(r.out, /npm install @straitlink\/react-native@0\.9\.1 /);
+  assert.match(r.out, /npm install @straitlink\/react-native@0\.9\.2 /);
   assert.match(r.out, /<data android:scheme="https" android:host="acme\.strait\.link" \/>/);
   assert.match(r.out, /<data android:scheme="acmeshop" \/>/);
   assert.match(r.out, /curl https:\/\/acme\.strait\.link\/\.well-known\/assetlinks\.json/);
   assert.match(r.out, /curl https:\/\/acme\.strait\.link\/\.well-known\/apple-app-site-association/);
   assert.match(r.out, /adb shell pm get-app-links com\.acme\.shop/);
-  assert.match(r.out, /iPhone \(beta\)/);
+  // iPhone left beta 22 Oct 2026 (ops/IOS-STATUS-1022.md): no beta label; install matching is opt-in.
+  assert.doesNotMatch(r.out, /beta/i);
+  assert.match(r.out, /\n\d\. iPhone\n/);
+  assert.match(r.out, /install matching is opt-in: turn it on in Dashboard → Settings → iPhone installs/);
+  // App ids and fingerprints live in Apps & stores now, not Settings.
+  assert.match(r.out, /Fill in Dashboard → Apps & stores/);
 });
 
 test('Expo Router: links.ts + app/+native-intent.tsx, app.json block with intentFilters and associatedDomains', async () => {
@@ -62,8 +67,9 @@ test('Flutter: lib/links.dart, pubspec install from the constant, manifest alrea
   const dart = readFileSync(join(dir, 'lib/links.dart'), 'utf8');
   assert.match(dart, new RegExp(`publishableKey: '${KEY}'`));
   assert.match(dart, /links\.onLink\.listen/);
-  assert.match(dart, /\(strait_sdk 0\.9\.2\)/, 'header names the Flutter SDK version');
-  assert.match(r.out, /strait_sdk: \^0\.9\.2\n/);
+  assert.match(dart, /didChangeAppLifecycleState\(AppLifecycleState state\) => _ctl\.add\(switch \(state\)/, 'flutter analyze: avoid_renaming_method_parameters');
+  assert.match(dart, /\(strait_sdk 0\.9\.3\)/, 'header names the Flutter SDK version');
+  assert.match(r.out, /strait_sdk: \^0\.9\.3\n/);
   for (const line of installSpecs().flutterPubspec.split('\n')) assert.ok(r.out.includes(`    ${line}\n`), line);
   assert.match(r.out, /intent filters for acme\.strait\.link and acmeflutter:\/\/ are already there/);
   assert.match(r.out, /flutter_deeplinking_enabled" android:value="false"/);
@@ -124,6 +130,26 @@ test('an existing integration file is kept unless --force', async () => {
   assert.match(readFileSync(join(dir, 'links.ts'), 'utf8'), /createStrait/);
 });
 
+test('a guessed scheme is said out loud, and --scheme puts your own scheme everywhere (quick-start fix 1, 23 Oct 2026)', async () => {
+  const dir = copyFixture('rn-bare');
+  for (const extra of [[], ['--dry-run']]) {
+    const guessed = await run(['init', dir, '--key', KEY, '--host', HOST, '--force', ...extra]);
+    assert.equal(guessed.code, 0, guessed.err);
+    assert.match(guessed.out, /scheme: acmeshop:\/\/ \(guessed from the package name com\.acme\.shop\)/);
+    assert.match(guessed.out, /If you made up your own scheme \(Custom scheme in Dashboard → Apps & stores\), run this again with --scheme yourscheme/);
+  }
+  const own = await run(['init', dir, '--key', KEY, '--host', HOST, '--force', '--scheme', 'yourapp']);
+  assert.equal(own.code, 0, own.err);
+  assert.doesNotMatch(own.out, /guessed/);
+  assert.doesNotMatch(own.out, /acmeshop/);
+  assert.match(own.out, /scheme: yourapp:\/\//);
+  assert.match(own.out, /<data android:scheme="yourapp" \/>/);
+  assert.match(own.out, /-d "yourapp:\/\/shop\.example\.com\/product\/42"/);
+  // A scheme already in app.json is the developer's own, not a guess.
+  const expo = await run(['init', copyFixture('expo-router'), '--key', KEY, '--host', HOST, '--dry-run']);
+  assert.doesNotMatch(expo.out, /guessed/);
+});
+
 test('a secret key is refused and nothing is written', async () => {
   const dir = copyFixture('rn-bare');
   const r = await run(['init', dir, '--key', 'st_live_0123456789abcdef', '--host', HOST]);
@@ -154,6 +180,7 @@ test('in a terminal it asks, re-asks on a bad answer, and takes the suggested sc
   assert.equal(r.code, 0, r.err);
   assert.equal(asked.length, 5);
   assert.match(asked[4], /\[acmeshop\]/);
+  assert.match(asked[4], /Custom scheme in Dashboard → Apps & stores/);
   assert.match(r.err, /secret key/);
   assert.match(readFileSync(join(dir, 'links.ts'), 'utf8'), /acme\.strait\.link/);
 });

@@ -28,7 +28,7 @@ npx @straitlink/cli init
    | Flutter | `lib/links.dart` |
    | Android | `app/src/main/java/<package>/StraitLinks.kt` |
 
-4. Prints the remaining steps for your app: the install command, the AndroidManifest intent filters (or the `app.json` block for Expo), the iPhone (beta) Associated Domains entry, what to fill in under Dashboard → Settings, and the `curl` checks for `assetlinks.json` and `apple-app-site-association`. Steps the project already has, such as the intent filters, are marked `[already done]`.
+4. Prints the remaining steps for your app: the install command, the AndroidManifest intent filters (or the `app.json` block for Expo), the iPhone Associated Domains entry, what to fill in under Dashboard → Apps & stores, and the `curl` checks for `assetlinks.json` and `apple-app-site-association`. Steps the project already has, such as the intent filters, are marked `[already done]`.
 
 It never edits your existing files and never overwrites an earlier integration file unless you pass `--force`.
 
@@ -48,7 +48,7 @@ From a checkout of this repo: `node bin/strait.mjs init ../my-app`, or `npm link
 |---|---|
 | `--key` | Publishable key (Dashboard → Get started). Env: `STRAIT_PUBLISHABLE_KEY` |
 | `--host` | Link domain, e.g. `acme.strait.link`. A pasted link works too. Env: `STRAIT_LINK_HOST` |
-| `--scheme` | Custom scheme. Taken from `app.json`, or guessed from the package name (`com.acme.shop` → `acmeshop`) |
+| `--scheme` | Custom scheme: the one you typed in Dashboard → Apps & stores. Taken from `app.json`, or guessed from the package name (`com.acme.shop` → `acmeshop`); a guess is marked "(guessed from …)" in the output |
 | `--framework` | `react-native`, `expo`, `flutter` or `android`, to skip detection |
 | `--dry-run` | Print the files and steps; write nothing |
 | `--force` | Replace an existing integration file |

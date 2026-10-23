@@ -31,12 +31,15 @@ export function planInit({ dir, key, host, scheme, framework, force = false, ins
   const chosen = scheme ?? suggestScheme(project);
   if (!chosen) throw new UsageError("Couldn't guess your app's custom scheme. Pass --scheme, for example --scheme acmeshop.");
   const opts = { key: k, host: h, scheme: normalizeScheme(chosen) };
+  // Said out loud in the output: the developer may have made up a different scheme in Apps & stores.
+  const schemeGuessedFrom =
+    scheme || project.scheme ? null : suggestScheme({ androidPackage: project.androidPackage }) ? `the package name ${project.androidPackage}` : `the app name ${project.appName}`;
   const files = integrationFiles(project, opts).map((f) => {
     const abs = join(root, f.path);
     return { ...f, abs, exists: existsSync(abs) };
   });
   const conflicts = force ? [] : files.filter((f) => f.exists).map((f) => f.path);
-  return { project, opts, files, steps: nextSteps(project, opts, installSource), conflicts };
+  return { project, opts, schemeGuessedFrom, files, steps: nextSteps(project, opts, installSource), conflicts };
 }
 
 function emptyProject(dir) {
@@ -62,7 +65,13 @@ export function formatPlan(plan, { dryRun = false } = {}) {
   const out = [];
   const facts = [project.label, project.androidPackage && `package ${project.androidPackage}`, project.expoRouter && 'Expo Router', project.typescript && 'TypeScript'].filter(Boolean);
   out.push(`Found: ${facts.join(' · ')}`);
-  out.push(`Link host: ${opts.host} · scheme: ${opts.scheme}://`);
+  out.push(`Link host: ${opts.host} · scheme: ${opts.scheme}://${plan.schemeGuessedFrom ? ` (guessed from ${plan.schemeGuessedFrom})` : ''}`);
+  if (plan.schemeGuessedFrom) {
+    out.push(
+      'If you made up your own scheme (Custom scheme in Dashboard → Apps & stores), run this again with --scheme yourscheme' +
+        (dryRun ? ', so every line below uses it.' : ' --dry-run to print these steps with it (the file written does not contain the scheme, so keep it).'),
+    );
+  }
   out.push('');
   out.push(dryRun ? 'Dry run: nothing written. These files would be created:' : 'Created:');
   // A conflict is a file the real run refuses to overwrite (no --force): never call it replaced.
