@@ -113,6 +113,12 @@ test('an existing integration file is kept unless --force', async () => {
   assert.equal(readFileSync(join(dir, 'links.ts'), 'utf8'), '// mine\n');
   const dry = await run(['init', dir, '--key', KEY, '--host', HOST, '--dry-run']);
   assert.match(dry.out, /already exists; a real run needs --force/);
+  // The file line must not promise what the real run refuses (Q32, 23 Oct 2026).
+  assert.doesNotMatch(dry.out, /links\.ts \(replaced\)/);
+  assert.match(dry.out, /links\.ts \(already exists: kept unless --force\)/);
+  const dryForced = await run(['init', dir, '--key', KEY, '--host', HOST, '--dry-run', '--force']);
+  assert.match(dryForced.out, /links\.ts \(replaced\)/);
+  assert.equal(readFileSync(join(dir, 'links.ts'), 'utf8'), '// mine\n');
   const forced = await run(['init', dir, '--key', KEY, '--host', HOST, '--force']);
   assert.equal(forced.code, 0, forced.err);
   assert.match(readFileSync(join(dir, 'links.ts'), 'utf8'), /createStrait/);

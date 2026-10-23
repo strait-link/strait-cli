@@ -65,7 +65,9 @@ export function formatPlan(plan, { dryRun = false } = {}) {
   out.push(`Link host: ${opts.host} · scheme: ${opts.scheme}://`);
   out.push('');
   out.push(dryRun ? 'Dry run: nothing written. These files would be created:' : 'Created:');
-  for (const f of files) out.push(`  ${f.path}${f.exists ? ' (replaced)' : ''}  ${f.why}`);
+  // A conflict is a file the real run refuses to overwrite (no --force): never call it replaced.
+  const label = (f) => (plan.conflicts.includes(f.path) ? ' (already exists: kept unless --force)' : f.exists ? ' (replaced)' : '');
+  for (const f of files) out.push(`  ${f.path}${label(f)}  ${f.why}`);
   if (dryRun) {
     for (const f of files) {
       out.push('');
