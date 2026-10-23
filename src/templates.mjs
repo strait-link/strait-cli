@@ -84,7 +84,7 @@ class LifecycleFeed with WidgetsBindingObserver {
   Stream<AppLifecycle> get stream => _ctl.stream;
   LifecycleFeed() { WidgetsBinding.instance.addObserver(this); }
   @override
-  void didChangeAppLifecycleState(AppLifecycleState s) => _ctl.add(switch (s) {
+  void didChangeAppLifecycleState(AppLifecycleState state) => _ctl.add(switch (state) {
         AppLifecycleState.resumed => AppLifecycle.active,
         AppLifecycleState.inactive => AppLifecycle.inactive,
         _ => AppLifecycle.background,
@@ -357,19 +357,24 @@ export function nextSteps(project, opts, installSrc) {
       code: done ? undefined : [filtersDone ? null : manifestXml(opts), needsFlutterMeta ? flutterMeta : null].filter(Boolean).join('\n'),
       lang: 'xml',
     });
-    steps.push({ title: 'iPhone (beta)', body: `In Xcode add Associated Domains → applinks:${host}, and ${scheme} under Info → URL Types.${fw === 'flutter' ? ' Set FlutterDeepLinkingEnabled = NO in Info.plist.' : ''}` });
+    steps.push({
+      title: 'iPhone',
+      body:
+        `In Xcode add Associated Domains → applinks:${host}, and ${scheme} under Info → URL Types.${fw === 'flutter' ? ' Set FlutterDeepLinkingEnabled = NO in Info.plist.' : ''} ` +
+        'Links then open your app on the right screen. iPhone install matching is opt-in: turn it on in Dashboard → Settings → iPhone installs (it starts off) to land people on that screen after an App Store install.',
+    });
   }
 
   // 4. Dashboard + verification files
   steps.push({
-    title: 'Fill in Dashboard → Settings',
-    body: `Package name ${pkg}, custom scheme ${scheme}, and the SHA-256 fingerprint of every certificate your app is signed with (debug, upload, and Play App Signing from Play Console → App integrity). For iPhone (beta), your Apple Team ID and bundle ID.`,
+    title: 'Fill in Dashboard → Apps & stores',
+    body: `Package name ${pkg}, custom scheme ${scheme}, and the SHA-256 fingerprint of every certificate your app is signed with (debug, upload, and Play App Signing from Play Console → App integrity). For iPhone, your Apple Team ID and bundle ID.`,
     code: keytool(fw),
     lang: 'bash',
   });
   steps.push({
     title: 'Check the verification files your link domain serves',
-    body: 'Each returns 404 until the matching Settings fields are filled in. assetlinks.json lets Android open https links in the app directly; apple-app-site-association does the same on iPhone (beta).',
+    body: 'Each returns 404 until the matching Apps & stores fields are filled in. assetlinks.json lets Android open https links in the app directly; apple-app-site-association does the same on iPhone.',
     code: `curl https://${host}/.well-known/assetlinks.json\ncurl https://${host}/.well-known/apple-app-site-association`,
     lang: 'bash',
   });

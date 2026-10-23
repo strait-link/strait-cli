@@ -15,7 +15,8 @@ Usage
 Options
   --key <st_pub_live_…>   Publishable key (Dashboard → Get started)
   --host <host>           Your link domain, e.g. acme.strait.link
-  --scheme <scheme>       Your app's custom scheme, e.g. acmeshop (guessed from the package name)
+  --scheme <scheme>       Your app's custom scheme, the one in Dashboard → Apps & stores,
+                          e.g. acmeshop (guessed from the package name if left out)
   --framework <name>      react-native | expo | flutter | android (detected by default)
   --dry-run               Print what would be written; write nothing
   --force                 Replace an existing integration file
@@ -84,7 +85,7 @@ export async function main(argv, io = {}) {
         host = host ?? (await askValid(ask, 'Link host (e.g. acme.strait.link): ', normalizeHost, err));
         if (!scheme) {
           const guess = suggestScheme(detectProject(dir) ?? {});
-          scheme = await askValid(ask, `Custom scheme${guess ? ` [${guess}]` : ''}: `, (a) => normalizeScheme(a || guess || ''), err);
+          scheme = await askValid(ask, `Custom scheme in Dashboard → Apps & stores${guess ? ` [${guess}]` : ''}: `, (a) => normalizeScheme(a || guess || ''), err);
         }
       } finally {
         ask.close?.();

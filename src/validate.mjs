@@ -17,8 +17,20 @@ export function normalizeKey(value) {
         'If the secret key was pasted somewhere public, rotate it in Dashboard → Settings → Secret keys.',
     );
   }
-  if (!PUB_KEY.test(k)) throw new UsageError(`"${k}" is not a publishable key. It starts with st_pub_live_ (Dashboard → Get started).`);
+  if (!PUB_KEY.test(k)) {
+    const where = 'Copy your real one from Dashboard → Get started (the Publishable key box): st_pub_live_ followed by 32 letters and numbers.';
+    const rest = /^st_pub_(?:live|test)_(.*)$/.exec(k)?.[1];
+    if (rest == null) throw new UsageError(`"${k}" is not a publishable key. ${where}`);
+    if (isExample(rest)) throw new UsageError(`"${k}" is the example key from the docs, not your key. ${where}`);
+    throw new UsageError(`"${k}" looks cut off. ${where}`);
+  }
   return k;
+}
+
+/** The docs' placeholder (st_pub_live_…) or a "your key here" stand-in, as opposed to a real key cut short. */
+function isExample(rest) {
+  const r = rest.replace(/(?:…|\.)+$/, '');
+  return r === '' || /^<.*>$/.test(r) || /your/i.test(r) || /^x{3,}$/i.test(r);
 }
 
 /** "https://Acme.strait.link/summer" → "acme.strait.link". */

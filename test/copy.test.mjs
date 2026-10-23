@@ -15,7 +15,9 @@ test('generated files and printed steps follow the truth rules', () => {
     const plan = planInit({ dir: join(FIXTURES, name), key: KEY, host: HOST });
     const text = formatPlan(plan, { dryRun: true });
     assert.doesNotMatch(text, BANNED, name);
-    assert.doesNotMatch(text, /iPhone(?! \(beta\))(?! install)/, `${name}: iPhone is always marked beta`);
+    // iPhone left beta 22 Oct 2026 (ops/IOS-STATUS-1022.md): never "beta"; install matching is always called opt-in.
+    assert.doesNotMatch(text, /beta/i, `${name}: iPhone is not beta`);
+    if (/iPhone install matching/.test(text)) assert.match(text, /iPhone install matching is opt-in/, name);
   }
 });
 
