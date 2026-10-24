@@ -24,7 +24,7 @@ test('React Native: writes links.ts with key, host and an onLink handler, prints
   assert.match(links, /endpoint: 'https:\/\/acme\.strait\.link'/);
   assert.match(links, /links\.onLink\(\(e\) =>/);
   assert.match(links, /links\.start\(\);/);
-  assert.match(r.out, /npm install @straitlink\/react-native@0\.9\.2 /);
+  assert.match(r.out, /npm install @straitlink\/react-native@0\.9\.3 /);
   assert.match(r.out, /<data android:scheme="https" android:host="acme\.strait\.link" \/>/);
   assert.match(r.out, /<data android:scheme="acmeshop" \/>/);
   assert.match(r.out, /curl https:\/\/acme\.strait\.link\/\.well-known\/assetlinks\.json/);
