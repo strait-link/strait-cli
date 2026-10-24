@@ -21,10 +21,10 @@ export const sourceFor = (src, registry) => (typeof src.source === 'string' ? sr
  * (the one source of truth; test/install.test.mjs fails if they differ). Bump both together.
  */
 export const VERSIONS = {
-  version: '0.9.3', // Swift (Unity is not written by this CLI)
-  rnVersion: '0.9.2',
+  version: '0.9.4', // Swift (Unity is not written by this CLI)
+  rnVersion: '0.9.3',
   flutterVersion: '0.9.3',
-  androidVersion: '0.8.1',
+  androidVersion: '0.8.3',
 };
 
 export const PACKAGES = {
