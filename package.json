@@ -1,7 +1,7 @@
 {
   "name": "@straitlink/cli",
-  "version": "0.1.4",
-  "description": "npx @straitlink/cli init: set up Strait deep links in a React Native, Expo, Flutter or Android app.",
+  "version": "0.2.0",
+  "description": "Strait deep links from the terminal: init sets them up in a React Native, Expo, Flutter or Android app, doctor checks your link host, links creates and lists links and saves QR codes.",
   "keywords": [
     "strait",
     "deep-linking",
@@ -12,6 +12,7 @@
     "expo",
     "flutter",
     "android",
+    "qr-code",
     "cli"
   ],
   "homepage": "https://straitlink.in/docs/",

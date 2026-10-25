@@ -69,8 +69,8 @@ test('Flutter: lib/links.dart, pubspec install from the constant, manifest alrea
   assert.match(dart, new RegExp(`publishableKey: '${KEY}'`));
   assert.match(dart, /links\.onLink\.listen/);
   assert.match(dart, /didChangeAppLifecycleState\(AppLifecycleState state\) => _ctl\.add\(switch \(state\)/, 'flutter analyze: avoid_renaming_method_parameters');
-  assert.match(dart, /\(strait_sdk 0\.9\.3\)/, 'header names the Flutter SDK version');
-  assert.match(r.out, /strait_sdk: \^0\.9\.3\n/);
+  assert.match(dart, /\(strait_sdk 0\.9\.4\)/, 'header names the Flutter SDK version');
+  assert.match(r.out, /strait_sdk: \^0\.9\.4\n/);
   for (const line of installSpecs().flutterPubspec.split('\n')) assert.ok(r.out.includes(`    ${line}\n`), line);
   assert.match(r.out, /intent filters for acme\.strait\.link and acmeflutter:\/\/ are already there/);
   assert.match(r.out, /flutter_deeplinking_enabled" android:value="false"/);

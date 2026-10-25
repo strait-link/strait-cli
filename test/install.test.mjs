@@ -10,20 +10,20 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const walk = (d) => readdirSync(d).flatMap((n) => (n === 'node_modules' || n === '.git' ? [] : statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : [join(d, n)]));
 
 test('github and registry sources', () => {
-  // Versions as of 24 Oct 2026 (site.config.json packages): RN 0.9.3, Flutter 0.9.3, Android 0.8.3.
+  // Versions as of 25 Oct 2026 (site.config.json packages, site PR #31): RN 0.9.3, Flutter 0.9.4, Android 0.8.4.
   const gh = installSpecs({ source: 'github', githubOwner: 'strait-sdks' });
   assert.equal(gh.reactNative, 'github:strait-sdks/strait-sdk-react-native#v0.9.3');
-  assert.equal(gh.android, 'com.github.strait-sdks:strait-sdk-android:v0.8.3');
+  assert.equal(gh.android, 'com.github.strait-sdks:strait-sdk-android:v0.8.4');
   assert.equal(gh.androidRepository, 'https://jitpack.io');
-  assert.match(gh.flutterPubspec, /url: https:\/\/github\.com\/strait-sdks\/strait-sdk-flutter\n {6}ref: v0\.9\.3/);
+  assert.match(gh.flutterPubspec, /url: https:\/\/github\.com\/strait-sdks\/strait-sdk-flutter\n {6}ref: v0\.9\.4/);
   const today = installSpecs();
   assert.equal(today.reactNative, '@straitlink/react-native@0.9.3', 'npm in registry mode (16 Oct)');
-  assert.equal(today.flutterPubspec, '  strait_sdk: ^0.9.3', 'pub.dev in registry mode (16 Oct)');
-  assert.equal(today.android, `com.github.${INSTALL.githubOwner}:strait-sdk-android:v0.8.3`, 'Android stays on JitPack');
+  assert.equal(today.flutterPubspec, '  strait_sdk: ^0.9.4', 'pub.dev in registry mode (16 Oct)');
+  assert.equal(today.android, `com.github.${INSTALL.githubOwner}:strait-sdk-android:v0.8.4`, 'Android stays on JitPack');
   const reg = installSpecs({ ...INSTALL, source: 'registry' });
   assert.equal(reg.reactNative, '@straitlink/react-native@0.9.3');
-  assert.equal(reg.android, 'in.straitlink:strait-sdk-android:0.8.3');
-  assert.equal(reg.flutterPubspec, '  strait_sdk: ^0.9.3');
+  assert.equal(reg.android, 'in.straitlink:strait-sdk-android:0.8.4');
+  assert.equal(reg.flutterPubspec, '  strait_sdk: ^0.9.4');
   assert.equal(reg.androidRepository, null);
 });
 
