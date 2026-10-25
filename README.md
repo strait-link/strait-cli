@@ -12,7 +12,9 @@ One command sets up Strait deep links in your app. Every link open and install i
 `@straitlink/cli`
 
 ```bash
-npx @straitlink/cli init
+npx @straitlink/cli init                                     # set up deep links in your app
+npx @straitlink/cli doctor --host acme.strait.link          # check the link host lists your app
+npx @straitlink/cli links create summer https://acme.com/s  # create a link (secret key in env)
 ```
 
 `strait init` sets up Strait deep links in a React Native, Expo, Flutter or Android (Kotlin) app:
@@ -55,6 +57,44 @@ From a checkout of this repo: `node bin/strait.mjs init ../my-app`, or `npm link
 | `--yes`, `-y` | Never prompt. Exits 2 if something is missing (for CI and agents) |
 
 Exit codes: `0` done, `2` usage problem (message on stderr), `1` unexpected error.
+
+## Check your setup: `strait doctor`
+
+```bash
+npx @straitlink/cli doctor --host acme.strait.link --android com.acme.shop --ios com.acme.shop
+```
+
+Runs the same checks, with the same finding ids and wording, as `doctor()` in the Strait SDKs (React Native 0.9.3, Swift 0.9.4, Android 0.8.4, Flutter 0.9.4; contract B23, the 43 shared cases in `test/doctor-vectors.json`). It fetches `https://<host>/.well-known/assetlinks.json` and `apple-app-site-association` once each and tells you whether your package, bundle ID and (with `--cert`) signing certificate are listed, with the fix for each problem:
+
+```
+Android (assetlinks.json)
+  error  app.missing       acme.strait.link doesn't list com.acme.shop
+                           Fix: Add com.acme.shop in Dashboard → Apps & stores (listed now: com.acme.app).
+```
+
+| Option | |
+|---|---|
+| `--host` | Your link domain. Env: `STRAIT_LINK_HOST` |
+| `--android <package>` / `--ios <bundleId>` | The app to look for. With neither, both files are checked and the apps they list are shown |
+| `--cert <sha256>` | Android signing certificate fingerprint, any format; repeat for debug, release and Play App Signing |
+| `--key` | Also check the publishable key. Env: `STRAIT_PUBLISHABLE_KEY`. Left out, the key check is skipped |
+| `--json` | The reports as JSON, for CI and agents |
+
+Exit codes: `0` no errors (warnings allowed), `1` a check failed, `2` usage problem. What a terminal can't see (intent filters, the Associated Domains entitlement) is checked by `doctor()` inside a debug build and by the [free tools](https://straitlink.in/tools/).
+
+## Manage links: `strait links`
+
+```bash
+export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Secret keys
+npx @straitlink/cli links create summer https://acme.com/summer --campaign sale --tag email
+npx @straitlink/cli links list --status active --limit 20
+npx @straitlink/cli links qr summer --size 512          # writes summer.png
+npx @straitlink/cli links qr summer --format svg --out summer.svg
+```
+
+These call the [public API](https://straitlink.in/docs/api/) (`POST /v1/links`, `GET /v1/links`, `GET /v1/links/{slug}/qr`) with a secret key from `STRAIT_SECRET_KEY` or `--secret-key` (the environment is better: flags stay in your shell history). The key is never printed, not even inside an API error. A publishable key is refused here. `--api-url` (env `STRAIT_API_URL`) points at another engine and must be https. `--json` prints the API answer as is. A QR file is never overwritten without `--force`.
+
+Exit codes: `0` done, `1` the API said no or can't be reached (its message on stderr), `2` usage problem.
 
 ## Install lines: one constant
 
