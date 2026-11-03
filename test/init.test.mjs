@@ -24,7 +24,7 @@ test('React Native: writes links.ts with key, host and an onLink handler, prints
   assert.match(links, /endpoint: 'https:\/\/acme\.strait\.link'/);
   assert.match(links, /links\.onLink\(\(e\) =>/);
   assert.match(links, /links\.start\(\);/);
-  assert.match(r.out, /npm install @straitlink\/react-native@0\.9\.3 /);
+  assert.match(r.out, /npm install @straitlink\/react-native@0\.10\.2 /);
   assert.match(r.out, /<data android:scheme="https" android:host="acme\.strait\.link" \/>/);
   assert.match(r.out, /<data android:scheme="acmeshop" \/>/);
   assert.match(r.out, /curl https:\/\/acme\.strait\.link\/\.well-known\/assetlinks\.json/);
@@ -69,8 +69,8 @@ test('Flutter: lib/links.dart, pubspec install from the constant, manifest alrea
   assert.match(dart, new RegExp(`publishableKey: '${KEY}'`));
   assert.match(dart, /links\.onLink\.listen/);
   assert.match(dart, /didChangeAppLifecycleState\(AppLifecycleState state\) => _ctl\.add\(switch \(state\)/, 'flutter analyze: avoid_renaming_method_parameters');
-  assert.match(dart, /\(strait_sdk 0\.9\.4\)/, 'header names the Flutter SDK version');
-  assert.match(r.out, /strait_sdk: \^0\.9\.4\n/);
+  assert.match(dart, /\(strait_sdk 0\.9\.7\)/, 'header names the Flutter SDK version');
+  assert.match(r.out, /strait_sdk: \^0\.9\.7\n/);
   for (const line of installSpecs().flutterPubspec.split('\n')) assert.ok(r.out.includes(`    ${line}\n`), line);
   assert.match(r.out, /intent filters for acme\.strait\.link and acmeflutter:\/\/ are already there/);
   assert.match(r.out, /flutter_deeplinking_enabled" android:value="false"/);
