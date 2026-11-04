@@ -8,7 +8,7 @@ const HEADER = (pkg, version) => `Created by \`strait init\` (${pkg} ${version})
 
 // ---------- integration files ----------
 
-function rnLinks({ key, host }, { withRouting }) {
+function rnLinks({ key, host }, { withRouting, routerDir = 'app' }) {
   return `// ${HEADER(PACKAGES.reactNative, VERSIONS.rnVersion)}
 // Import this file once from your entry file (index.js) so the launch link is caught.
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -36,7 +36,7 @@ links.onLink((e) => {
 });
 `
     : `
-// Routing lives in app/_layout.tsx (links.onLink). This log helps while you set up.
+// Routing lives in ${routerDir}/_layout.tsx (links.onLink). This log helps while you set up.
 links.onLink((e) => console.log('Strait link:', e.kind, e.route, e.matched, e.path));
 `
 }
@@ -44,8 +44,8 @@ links.start();
 `;
 }
 
-const NATIVE_INTENT = `// ${HEADER(PACKAGES.reactNative, VERSIONS.rnVersion)}
-// Links reach the app through Strait's onLink (app/_layout.tsx), which knows the
+const nativeIntent = (routerDir) => `// ${HEADER(PACKAGES.reactNative, VERSIONS.rnVersion)}
+// Links reach the app through Strait's onLink (${routerDir}/_layout.tsx), which knows the
 // real destination. Keep Expo Router from routing the raw link URL.
 // If your app has other deep links of its own (a sign-in callback), return \`path\` for those.
 export function redirectSystemPath({ path }: { path: string; initial: boolean }) {
@@ -223,8 +223,11 @@ export function integrationFiles(project, opts) {
     case 'react-native':
       return [{ path: `links.${ext}`, contents: rnLinks(opts, { withRouting: true }), why: 'creates the client and handles every link' }];
     case 'expo': {
-      const files = [{ path: `links.${ext}`, contents: rnLinks(opts, { withRouting: !project.expoRouter }), why: 'creates the client' }];
-      if (project.expoRouter) files.push({ path: 'app/+native-intent.tsx', contents: NATIVE_INTENT, why: 'stops Expo Router routing the raw link URL' });
+      const routerDir = project.routerDir ?? 'app';
+      // links.ts sits next to the router folder, so the layout's `../links` import finds it.
+      const linksPath = project.expoRouter && routerDir === 'src/app' ? `src/links.${ext}` : `links.${ext}`;
+      const files = [{ path: linksPath, contents: rnLinks(opts, { withRouting: !project.expoRouter, routerDir }), why: 'creates the client' }];
+      if (project.expoRouter) files.push({ path: `${routerDir}/+native-intent.tsx`, contents: nativeIntent(routerDir), why: 'stops Expo Router routing the raw link URL' });
       return files;
     }
     case 'flutter':
@@ -333,7 +336,7 @@ export function nextSteps(project, opts, installSrc) {
   if (fw === 'react-native') steps.push({ title: 'Load links at startup', body: `Add \`import './links';\` to the top of index.js, then rebuild (npx react-native run-android). The SDK adds a native module, so a Metro reload is not enough.` });
   if (fw === 'expo') {
     steps.push({ title: 'Add link settings to app.json (merge with what you have)', code: expoAppJson(opts, project), lang: 'json', body: `${project.dynamicConfig ? 'Your config is app.config.js/ts, so copy these keys into it by hand. ' : ''}associatedDomains opens links in your iPhone app. ${IPHONE_INSTALLS}` });
-    if (project.expoRouter) steps.push({ title: 'Route links in app/_layout.tsx', code: EXPO_LAYOUT, lang: 'tsx' });
+    if (project.expoRouter) steps.push({ title: `Route links in ${project.routerDir ?? 'app'}/_layout.tsx`, code: EXPO_LAYOUT, lang: 'tsx' });
     else steps.push({ title: 'Load links at startup', body: "Add `import './links';` to your entry file." });
     steps.push({ title: 'Make a development build (Expo Go cannot load the native module)', code: 'npx expo run:android     # or: eas build --profile development --platform android', lang: 'bash' });
   }

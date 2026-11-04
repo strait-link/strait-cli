@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { detectProject, gradlePackage, manifestLinks } from '../src/detect.mjs';
 import { FIXTURES } from './helpers.mjs';
@@ -24,6 +24,14 @@ test('Expo with Expo Router: scheme, package and bundle id from app.json', () =>
   assert.equal(p.scheme, 'acmeexpo');
   assert.equal(p.androidPackage, 'com.acme.expo');
   assert.equal(p.iosBundleId, 'com.acme.expo');
+});
+
+test('Expo Router root: app/, or src/app when it exists (Expo checks src/app first)', () => {
+  assert.equal(d('expo-router').routerDir, 'app');
+  const dir = mkdtempSync(join(tmpdir(), 'strait-src-app-'));
+  writeFileSync(join(dir, 'package.json'), JSON.stringify({ dependencies: { expo: '~54.0.0', 'expo-router': '~6.0.0' } }));
+  mkdirSync(join(dir, 'src/app'), { recursive: true });
+  assert.equal(detectProject(dir).routerDir, 'src/app');
 });
 
 test('Expo without router or TypeScript', () => {
