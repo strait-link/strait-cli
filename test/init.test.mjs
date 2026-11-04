@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { main } from '../src/cli.mjs';
 import { planInit, writeFiles } from '../src/init.mjs';
@@ -51,6 +51,20 @@ test('Expo Router: links.ts + app/+native-intent.tsx, app.json block with intent
   assert.match(r.out, /npx expo run:android/);
   assert.doesNotMatch(r.out, /AndroidManifest\.xml/, 'Expo takes link settings in app.json');
   assert.match(r.out, /iPhone install matching is opt-in/, 'Expo hears it too');
+});
+
+test('Expo Router in src/app: writes src/links.ts + src/app/+native-intent.tsx and says src/app/_layout.tsx', async () => {
+  const dir = copyFixture('expo-router');
+  mkdirSync(join(dir, 'src'));
+  renameSync(join(dir, 'app'), join(dir, 'src/app')); // Expo Router uses src/app when it exists
+  const r = await run(['init', dir, '--key', KEY, '--host', HOST]);
+  assert.equal(r.code, 0, r.err);
+  assert.ok(existsSync(join(dir, 'src/links.ts')), 'next to src/app, so the layout imports ../links');
+  assert.ok(!existsSync(join(dir, 'links.ts')));
+  assert.match(readFileSync(join(dir, 'src/app/+native-intent.tsx'), 'utf8'), /src\/app\/_layout\.tsx/);
+  assert.ok(!existsSync(join(dir, 'app')), 'no stray app/ folder');
+  assert.match(r.out, /Route links in src\/app\/_layout\.tsx/);
+  assert.match(r.out, /import \{ links \} from '\.\.\/links';/);
 });
 
 test('Expo without TypeScript gets links.js', async () => {

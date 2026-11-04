@@ -26,7 +26,7 @@ npx @straitlink/cli links create summer https://acme.com/s  # create a link (sec
    | App | File written |
    |---|---|
    | React Native | `links.ts` (or `links.js`) |
-   | Expo | `links.ts`, plus `app/+native-intent.tsx` with Expo Router |
+   | Expo | `links.ts`, plus `app/+native-intent.tsx` with Expo Router (`src/links.ts` and `src/app/+native-intent.tsx` when your routes live in `src/app`) |
    | Flutter | `lib/links.dart` |
    | Android | `app/src/main/java/<package>/StraitLinks.kt` |
 

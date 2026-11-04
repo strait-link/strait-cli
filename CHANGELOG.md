@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- `strait init` on an Expo Router project whose routes live in `src/app` writes `src/app/+native-intent.tsx` and `src/links.ts` (was `app/` at the root, which Expo Router then ignored) and points you at `src/app/_layout.tsx`.
+
 ## 0.2.1 (3 Nov 2026)
 
 - `strait init` writes setup for today's SDKs: React Native 0.10.2, Flutter 0.9.7, iOS 0.9.5 (Android stays 0.8.4), the versions npm, pub.dev and the Swift tags have, same as the website.

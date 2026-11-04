@@ -73,6 +73,8 @@ export function detectProject(dir) {
       framework: 'expo',
       typescript: existsSync(join(dir, 'tsconfig.json')),
       expoRouter: Boolean(deps['expo-router']),
+      // Expo Router's root: src/app when it exists, else app (@expo/metro-config getRouterDirectory).
+      routerDir: deps['expo-router'] && existsSync(join(dir, 'src', 'app')) ? 'src/app' : 'app',
       appName: expo.name ?? pkg.name ?? null,
       androidPackage: expo.android?.package ?? null,
       iosBundleId: expo.ios?.bundleIdentifier ?? null,
