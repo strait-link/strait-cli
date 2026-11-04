@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.2 (4 Nov 2026)
 
 - `strait init` on an Expo Router project whose routes live in `src/app` writes `src/app/+native-intent.tsx` and `src/links.ts` (was `app/` at the root, which Expo Router then ignored) and points you at `src/app/_layout.tsx`.
 
