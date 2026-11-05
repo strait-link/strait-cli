@@ -4,6 +4,7 @@
 
 - `strait test`: one pass/fail list that says you're set up right: the engine answers, the secret key is valid (which workspace, test or live), and the workspace's link domain serves apple-app-site-association and assetlinks.json. Exit 1 on any failure, `--json` for CI.
 - `strait events add <name>`: prints ready-to-paste event tracking code for React Native, Flutter, iOS, Android or the web (detected from the project files, or `--platform`), using each SDK's real `trackEvent` call.
+- `strait events add --platform web` prints `@straitlink/web`'s new `trackEvent` instead of a hand-written `POST /v1/event` (needs the web SDK release that adds it).
 
 ## 0.2.2 (4 Nov 2026)
 

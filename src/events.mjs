@@ -4,7 +4,7 @@
 //   Flutter 0.9        links.trackEvent(name, value:, currency:, linkId:, clickId:) lib/src/client.dart (no eventId)
 //   iOS 0.10           strait.trackEvent(_:value:currency:linkId:clickId:eventId:completion:)  StraitLinks.swift
 //   Android 0.8        client.trackEvent(name, value, currency, linkId, clickId, eventId)  StraitClient.kt (blocks)
-//   Web 0.7            no event helper: the same POST /v1/event as sdk-web/examples/web/src/main.ts
+//   Web (Unreleased)   trackEvent(config, name, { value, currency, eventId })   src/index.ts (sdk-web ADR 0002)
 // `links` / `StraitLinks.client` are the names `strait init` writes (templates.mjs).
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -86,25 +86,15 @@ strait.trackEvent("${n}") { ok in
 // For revenue add value = 49.99, currency = "USD", eventId = order.id (a retry is counted once).
 val ok = StraitLinks.client.trackEvent("${n}")
 `,
-  web: (n, { key, host }) => `import { reportWebOpen } from '@straitlink/web';
+  web: (n, { key, host }) => `import { reportWebOpen, trackEvent } from '@straitlink/web';
 
 const strait = { publishableKey: '${key}', endpoint: 'https://${host}' };
 
-// On page load: remember the tap this visit came from.
-const open = await reportWebOpen(strait);
-if (open.clickId) localStorage.setItem('strait_click', open.clickId);
+// On page load: counts the open and remembers the tap this visit came from.
+await reportWebOpen(strait);
 
-// Where "${n}" happens. @straitlink/web has no event helper yet, so this is the same
-// POST /v1/event the app SDKs send. For revenue add value: 49.99, currency: 'USD', eventId: order.id
-await fetch(\`\${strait.endpoint}/v1/event\`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    publishableKey: strait.publishableKey,
-    event: '${n}',
-    platform: 'web',
-    clickId: localStorage.getItem('strait_click') ?? undefined,
-  }),
-});
+// Where "${n}" happens. Resolves true when Strait took it; never throws. For revenue add
+// { value: 49.99, currency: 'USD', eventId: order.id } (eventId: a repeat is counted once).
+await trackEvent(strait, '${n}');
 `,
 };

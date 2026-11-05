@@ -28,7 +28,7 @@ test('each platform prints its SDK\'s real event call with the name', async () =
     flutter: [/import 'links\.dart';/, /await links\.trackEvent\('purchase'\);/, /value: 49\.99, currency: 'USD'/],
     ios: [/strait\.trackEvent\("purchase"\) \{ ok in/, /eventId: order\.id/],
     android: [/StraitLinks\.client\.trackEvent\("purchase"\)/, /off the main thread/],
-    web: [/import \{ reportWebOpen \} from '@straitlink\/web'/, /\/v1\/event/, /event: 'purchase'/, /platform: 'web'/, /clickId/],
+    web: [/import \{ reportWebOpen, trackEvent \} from '@straitlink\/web'/, /await reportWebOpen\(strait\);/, /await trackEvent\(strait, 'purchase'\);/, /value: 49\.99, currency: 'USD', eventId: order\.id/],
   };
   for (const [platform, patterns] of Object.entries(want)) {
     const r = await run(['add', 'purchase', '--platform', platform, FIXTURES]);
@@ -59,7 +59,12 @@ test('detects the platform from the project files', async () => {
   const spm = await run(['add', 'signup', dirWith({ 'Package.swift': '// swift-tools-version:5.9' })]);
   assert.match(spm.out, /strait\.trackEvent\("signup"\)/);
   const web = await run(['add', 'signup', dirWith({ 'package.json': JSON.stringify({ dependencies: { vite: '5' } }) })]);
-  assert.match(web.out, /reportWebOpen/);
+  assert.match(web.out, /trackEvent\(strait, 'signup'\)/);
+});
+
+test('web uses the SDK call, not a hand-written request', async () => {
+  const r = await run(['add', 'purchase', '--platform', 'web']);
+  assert.doesNotMatch(r.out, /fetch\(|\/v1\/event|localStorage/);
 });
 
 test('web fills in the publishable key and link host from the environment when set', async () => {
