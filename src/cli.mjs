@@ -9,6 +9,8 @@ import { resolve } from 'node:path';
 import { formatDoctor, runDoctor } from './doctor.mjs';
 import { ApiError, DEFAULT_API_URL, apiClient, linksCommand, secretKey } from './links.mjs';
 import { CLI_VERSION } from './version.mjs';
+import { formatSelfTest, runSelfTest } from './selftest.mjs';
+import { eventsCommand } from './events.mjs';
 
 const OPTIONS = {
   init: {
@@ -43,6 +45,14 @@ const OPTIONS = {
     force: { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
   },
+  test: {
+    'secret-key': { type: 'string' },
+    'api-url': { type: 'string' },
+    json: { type: 'boolean', default: false },
+  },
+  events: {
+    platform: { type: 'string' },
+  },
 };
 
 export const HELP = `strait: set up and check Strait deep links, and manage links
@@ -53,6 +63,8 @@ Usage
   strait links create <slug> <url> [options]  Create a link
   strait links list [options]                 List links
   strait links qr <slug> [options]            Save a link's QR code
+  strait test [options]                       Check your key, the engine and your link domain
+  strait events add <name> [dir] [options]    Print ready-to-paste code that tracks an event
 
 init options
   --key <st_pub_live_…>   Publishable key (Dashboard → Get started)
@@ -83,6 +95,16 @@ links options
   --format png|svg, --size <px>, --out <file>, --force  qr: output (default <slug>.png)
   --json                  Print the API answer as JSON
 
+test options
+  --secret-key, --api-url   As for links (env STRAIT_SECRET_KEY, STRAIT_API_URL)
+  --json                  Print { ok, workspace, checks } as JSON
+  Checks the engine answers, the key is valid (which workspace, test or live), and the
+  workspace's link domain serves apple-app-site-association and assetlinks.json. Exit 1
+  when a check fails (so it can run in CI), 2 for a missing or wrong kind of key.
+
+events options
+  --platform <name>       react-native | flutter | ios | android | web (detected by default)
+
 Environment
   STRAIT_PUBLISHABLE_KEY, STRAIT_LINK_HOST, STRAIT_SECRET_KEY, STRAIT_API_URL
 
@@ -91,6 +113,8 @@ Examples
   npx @straitlink/cli init --key st_pub_live_… --host acme.strait.link --dry-run
   npx @straitlink/cli doctor --host acme.strait.link --android com.acme.shop --ios com.acme.shop
   STRAIT_SECRET_KEY=st_live_… npx @straitlink/cli links create summer https://acme.com/summer
+  STRAIT_SECRET_KEY=st_live_… npx @straitlink/cli test
+  npx @straitlink/cli events add purchase
 `;
 
 /**
@@ -122,7 +146,7 @@ export async function main(argv, io = {}) {
   }
   if (cmd !== 'init') {
     try {
-      return await (cmd === 'doctor' ? doctor : links)(args, { out, err, env, io });
+      return await { doctor, links, test: selfTest, events }[cmd](args, { out, err, env, io });
     } catch (e) {
       if (e instanceof UsageError) {
         err.write(`strait: ${e.message}\n`);
@@ -206,6 +230,24 @@ async function doctor({ values: v }, { out, env, io }) {
   const result = await runDoctor({ host, key, android: v.android?.trim(), ios: v.ios?.trim(), certs: v.cert ?? [], fetch: io.fetch ?? fetch });
   out.write((v.json ? JSON.stringify(result, null, 2) : formatDoctor(result)) + '\n');
   return result.ok ? 0 : 1;
+}
+
+async function selfTest({ values: v, positionals }, { out, env, io }) {
+  if (positionals.length) throw new UsageError(`strait test takes no arguments ("${positionals[0]}"). Options: --secret-key, --api-url, --json.`);
+  const key = secretKey(v['secret-key'] ?? env.STRAIT_SECRET_KEY);
+  const apiUrl = String(v['api-url'] || env.STRAIT_API_URL || DEFAULT_API_URL).replace(/\/+$/, '');
+  const fetchImpl = io.fetch ?? fetch;
+  const call = apiClient({ apiUrl, key, fetch: fetchImpl, userAgent: `strait-cli/${CLI_VERSION}` });
+  const result = await runSelfTest({ call, apiUrl, key, fetch: fetchImpl });
+  out.write((v.json ? JSON.stringify(result, null, 2) : formatSelfTest(result)) + '\n');
+  return result.ok ? 0 : 1;
+}
+
+async function events({ values: v, positionals }, { out, env, io }) {
+  const [sub, name, dirArg, extra] = positionals;
+  if (extra !== undefined) throw new UsageError(`Too many arguments ("${extra}"). Usage: strait events add <name> [dir] [--platform …]`);
+  out.write(eventsCommand(sub, name === undefined ? [] : [name], v, { dir: resolve(io.cwd ?? process.cwd(), dirArg ?? '.'), env }) + '\n');
+  return 0;
 }
 
 async function links({ values: v, positionals }, { out, env, io }) {

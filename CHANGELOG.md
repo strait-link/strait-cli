@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- `strait test`: one pass/fail list that says you're set up right: the engine answers, the secret key is valid (which workspace, test or live), and the workspace's link domain serves apple-app-site-association and assetlinks.json. Exit 1 on any failure, `--json` for CI.
+- `strait events add <name>`: prints ready-to-paste event tracking code for React Native, Flutter, iOS, Android or the web (detected from the project files, or `--platform`), using each SDK's real `trackEvent` call.
+
 ## 0.2.2 (4 Nov 2026)
 
 - `strait init` on an Expo Router project whose routes live in `src/app` writes `src/app/+native-intent.tsx` and `src/links.ts` (was `app/` at the root, which Expo Router then ignored) and points you at `src/app/_layout.tsx`.
