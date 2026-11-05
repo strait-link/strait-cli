@@ -15,6 +15,8 @@ One command sets up Strait deep links in your app. Every link open and install i
 npx @straitlink/cli init                                     # set up deep links in your app
 npx @straitlink/cli doctor --host acme.strait.link          # check the link host lists your app
 npx @straitlink/cli links create summer https://acme.com/s  # create a link (secret key in env)
+npx @straitlink/cli test                                    # key, engine and link domain: pass/fail (secret key in env)
+npx @straitlink/cli events add purchase                     # print the code that tracks an event
 ```
 
 `strait init` sets up Strait deep links in a React Native, Expo, Flutter or Android (Kotlin) app:
@@ -95,6 +97,36 @@ npx @straitlink/cli links qr summer --format svg --out summer.svg
 These call the [public API](https://straitlink.in/docs/api/) (`POST /v1/links`, `GET /v1/links`, `GET /v1/links/{slug}/qr`) with a secret key from `STRAIT_SECRET_KEY` or `--secret-key` (the environment is better: flags stay in your shell history). The key is never printed, not even inside an API error. A publishable key is refused here. `--api-url` (env `STRAIT_API_URL`) points at another engine and must be https. `--json` prints the API answer as is. A QR file is never overwritten without `--force`.
 
 Exit codes: `0` done, `1` the API said no or can't be reached (its message on stderr), `2` usage problem.
+
+## Am I set up right? `strait test`
+
+```bash
+export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Secret keys
+npx @straitlink/cli test
+```
+
+```
+Strait test
+
+  pass  Engine       https://strait.link answers (version ddca50a)
+  pass  Key          valid live key st_live_3f9a… for workspace "Acme"
+  pass  Link domain  acme.strait.link (plan starter)
+  pass  iPhone       acme.strait.link lists TEAM123.com.acme.shop
+  pass  Android      acme.strait.link lists com.acme.shop
+
+All checks passed.
+```
+
+One read-only pass: the engine answers (`GET /healthz`), the secret key is valid and which workspace it belongs to, test or live (`GET /v1/workspace`), and the workspace's link domain serves `apple-app-site-association` and `assetlinks.json` listing your apps (the same checks as `strait doctor`). A failed check prints its fix; checks that need it are skipped. Exit `1` when any check fails, `2` for a missing or wrong kind of key, so it can gate a CI job. `--json` prints `{ ok, workspace, checks }`. Same key rules as `strait links`: never printed, publishable keys refused.
+
+## Track an event: `strait events add`
+
+```bash
+npx @straitlink/cli events add purchase                 # platform detected from the project files
+npx @straitlink/cli events add sign_up --platform ios   # react-native | flutter | ios | android | web
+```
+
+Prints ready-to-paste code with each SDK's own call: `trackEvent` in React Native (and Expo), Flutter, iOS and Android, using the client `strait init` wrote; on the web, `reportWebOpen` plus the `POST /v1/event` the app SDKs send (`@straitlink/web` has no event helper yet). The platform is detected from `package.json`, `pubspec.yaml`, Gradle files, an `.xcodeproj` or `Package.swift`. Nothing is written. Event names are 1-64 letters, numbers, spaces and `_ . : -`.
 
 ## Install lines: one constant
 
