@@ -100,7 +100,7 @@ test options
   --json                  Print { ok, workspace, checks } as JSON
   Checks the engine answers, the key is valid (which workspace, test or live), and the
   workspace's link domain serves apple-app-site-association and assetlinks.json. Exit 1
-  when a check fails, so it can run in CI.
+  when a check fails (so it can run in CI), 2 for a missing or wrong kind of key.
 
 events options
   --platform <name>       react-native | flutter | ios | android | web (detected by default)
@@ -232,7 +232,8 @@ async function doctor({ values: v }, { out, env, io }) {
   return result.ok ? 0 : 1;
 }
 
-async function selfTest({ values: v }, { out, env, io }) {
+async function selfTest({ values: v, positionals }, { out, env, io }) {
+  if (positionals.length) throw new UsageError(`strait test takes no arguments ("${positionals[0]}"). Options: --secret-key, --api-url, --json.`);
   const key = secretKey(v['secret-key'] ?? env.STRAIT_SECRET_KEY);
   const apiUrl = String(v['api-url'] || env.STRAIT_API_URL || DEFAULT_API_URL).replace(/\/+$/, '');
   const fetchImpl = io.fetch ?? fetch;
@@ -243,7 +244,8 @@ async function selfTest({ values: v }, { out, env, io }) {
 }
 
 async function events({ values: v, positionals }, { out, env, io }) {
-  const [sub, name, dirArg] = positionals;
+  const [sub, name, dirArg, extra] = positionals;
+  if (extra !== undefined) throw new UsageError(`Too many arguments ("${extra}"). Usage: strait events add <name> [dir] [--platform …]`);
   out.write(eventsCommand(sub, name === undefined ? [] : [name], v, { dir: resolve(io.cwd ?? process.cwd(), dirArg ?? '.'), env }) + '\n');
   return 0;
 }

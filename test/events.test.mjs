@@ -106,3 +106,7 @@ test('env values that could break the quoted code stay placeholders', async () =
   assert.match(r.out, /endpoint: 'https:\/\/<your-handle>\.strait\.link'/);
   assert.doesNotMatch(r.out, /alert/);
 });
+
+test('too many arguments is a usage error', async () => {
+  assert.equal((await run(['add', 'purchase', '.', 'extra', '--platform', 'web'])).code, 2);
+});

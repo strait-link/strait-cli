@@ -120,3 +120,21 @@ test('terminal control characters in a workspace name are not printed', async ()
   assert.equal(r.code, 0);
   assert.doesNotMatch(r.out, /[\u001b\u0007]/);
 });
+
+test('odd workspace fields: no crash, a bad link domain is a fail line, the key prefix never grows past 12', async () => {
+  const odd = await run([], { fetch: world({ '/v1/workspace': () => Response.json({ ...WORKSPACE, customDomains: 'a.strait.link', name: { x: 1 } }) }) });
+  assert.equal(odd.code, 0, odd.out + odd.err);
+  const bad = await run([], { fetch: world({ '/v1/workspace': () => Response.json({ ...WORKSPACE, linkDomain: 'https://a.strait.link/x' }) }) });
+  assert.equal(bad.code, 0, 'normalised to a.strait.link');
+  const worse = await run([], { fetch: world({ '/v1/workspace': () => Response.json({ ...WORKSPACE, linkDomain: 'not a host' }) }) });
+  assert.equal(worse.code, 1);
+  assert.match(worse.out, /fail\s+Link domain/);
+  assert.ok(!worse.fetch.calls.some((c) => c.url.pathname.startsWith('/.well-known/')));
+  const long = await run(['--json'], { fetch: world({ '/v1/workspace': () => Response.json({ ...WORKSPACE, key: { scope: 'full', prefix: SECRET } }) }) });
+  assert.equal(JSON.parse(long.out).workspace.keyPrefix.length <= 12, true);
+});
+
+test('strait test takes no arguments', async () => {
+  const r = await run(['extra']);
+  assert.equal(r.code, 2);
+});

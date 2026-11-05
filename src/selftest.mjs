@@ -2,7 +2,8 @@
 // the secret key is valid and says which workspace (GET /v1/workspace), and the workspace's link
 // domain serves apple-app-site-association and assetlinks.json (the same doctor as `strait doctor`).
 // Every failure is a `fail` line, never a throw; later checks that depend on it are `skip`.
-import { ApiError } from './links.mjs';
+import { ApiError, redact } from './links.mjs';
+import { normalizeHost } from './validate.mjs';
 import { runDoctor } from './doctor.mjs';
 
 const pass = (id, label, title) => ({ id, label, status: 'pass', title, fix: '' });
@@ -35,9 +36,16 @@ export async function runSelfTest({ call, apiUrl, key, fetch: fetchImpl }) {
   try {
     const w = await (await call('GET', '/v1/workspace')).json().catch(() => null);
     if (typeof w?.linkDomain !== 'string' || !w.linkDomain) throw new ApiError("GET /v1/workspace: the engine's answer has no link domain");
-    workspace = { name: w.name, handle: w.handle, linkDomain: w.linkDomain, customDomains: w.customDomains ?? [], plan: w.plan, mode, keyPrefix: w.key?.prefix ?? null, keyScope: w.key?.scope ?? null };
-    const access = w.key?.scope && w.key.scope !== 'full' ? `, ${w.key.scope} access` : '';
-    checks.push(pass('key', 'Key', `valid ${mode} key${w.key?.prefix ? ` ${w.key.prefix}…` : ''} for workspace "${w.name}"${access}`));
+    // Only strings are shown; the prefix is cut to the 12 characters the engine sends, in case a server echoes more.
+    const str = (x) => (typeof x === 'string' ? x : null);
+    const prefix = str(w.key?.prefix) && redact(w.key.prefix, key).slice(0, 12);
+    workspace = {
+      name: str(w.name), handle: str(w.handle), linkDomain: w.linkDomain,
+      customDomains: Array.isArray(w.customDomains) ? w.customDomains.filter((d) => typeof d === 'string') : [],
+      plan: str(w.plan), mode, keyPrefix: prefix || null, keyScope: str(w.key?.scope),
+    };
+    const access = workspace.keyScope && workspace.keyScope !== 'full' ? `, ${workspace.keyScope} access` : '';
+    checks.push(pass('key', 'Key', `valid ${mode} key${prefix ? ` ${prefix}…` : ''} for workspace "${workspace.name ?? '?'}"${access}`));
   } catch (e) {
     if (!(e instanceof ApiError)) throw e;
     checks.push(fail('key', 'Key', e.message, 'Create a secret key in Dashboard → Settings → Secret keys and set STRAIT_SECRET_KEY.'));
@@ -45,7 +53,14 @@ export async function runSelfTest({ call, apiUrl, key, fetch: fetchImpl }) {
     return done();
   }
 
-  const host = workspace.linkDomain;
+  let host;
+  try {
+    host = normalizeHost(workspace.linkDomain);
+  } catch {
+    checks.push(fail('domain', 'Link domain', `"${workspace.linkDomain}" is not a host name`, 'Contact support@straitlink.in: the engine sent a bad link domain.'));
+    checks.push(skip('ios', 'iPhone', 'needs a link domain'), skip('android', 'Android', 'needs a link domain'));
+    return done();
+  }
   const others = workspace.customDomains.filter((d) => d !== host);
   checks.push(pass('domain', 'Link domain', `${host}${workspace.plan ? ` (plan ${workspace.plan})` : ''}${others.length ? `; also ${others.join(', ')}` : ''}`));
   const doc = await runDoctor({ host, fetch: fetchImpl });

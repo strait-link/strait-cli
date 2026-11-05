@@ -115,6 +115,7 @@ Strait test
   pass  Android      acme.strait.link lists com.acme.shop
 
 All checks passed.
+Your app's own setup (intent filters, Associated Domains): strait doctor --android <package> --ios <bundleId>.
 ```
 
 One read-only pass: the engine answers (`GET /healthz`), the secret key is valid and which workspace it belongs to, test or live (`GET /v1/workspace`), and the workspace's link domain serves `apple-app-site-association` and `assetlinks.json` listing your apps (the same checks as `strait doctor`). A failed check prints its fix; checks that need it are skipped. Exit `1` when any check fails, `2` for a missing or wrong kind of key, so it can gate a CI job. `--json` prints `{ ok, workspace, checks }`. Same key rules as `strait links`: never printed, publishable keys refused.
@@ -124,6 +125,7 @@ One read-only pass: the engine answers (`GET /healthz`), the secret key is valid
 ```bash
 npx @straitlink/cli events add purchase                 # platform detected from the project files
 npx @straitlink/cli events add sign_up --platform ios   # react-native | flutter | ios | android | web
+npx @straitlink/cli events add purchase ./mobile         # [dir]: the app folder, default the current one
 ```
 
 Prints ready-to-paste code with each SDK's own call: `trackEvent` in React Native (and Expo), Flutter, iOS and Android, using the client `strait init` wrote; on the web, `reportWebOpen` plus the `POST /v1/event` the app SDKs send (`@straitlink/web` has no event helper yet). The platform is detected from `package.json`, `pubspec.yaml`, Gradle files, an `.xcodeproj` or `Package.swift`. Nothing is written. Event names are 1-64 letters, numbers, spaces and `_ . : -`.
