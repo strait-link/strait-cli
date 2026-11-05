@@ -128,7 +128,7 @@ npx @straitlink/cli events add sign_up --platform ios   # react-native | flutter
 npx @straitlink/cli events add purchase ./mobile         # [dir]: the app folder, default the current one
 ```
 
-Prints ready-to-paste code with each SDK's own call: `trackEvent` in React Native (and Expo), Flutter, iOS and Android, using the client `strait init` wrote; on the web, `reportWebOpen` plus the `POST /v1/event` the app SDKs send (`@straitlink/web` has no event helper yet). The platform is detected from `package.json`, `pubspec.yaml`, Gradle files, an `.xcodeproj` or `Package.swift`. Nothing is written. Event names are 1-64 letters, numbers, spaces and `_ . : -`.
+Prints ready-to-paste code with each SDK's own call: `trackEvent` in React Native (and Expo), Flutter, iOS and Android, using the client `strait init` wrote; on the web, `reportWebOpen` on page load plus `trackEvent` from `@straitlink/web`. The platform is detected from `package.json`, `pubspec.yaml`, Gradle files, an `.xcodeproj` or `Package.swift`. Nothing is written. Event names are 1-64 letters, numbers, spaces and `_ . : -`.
 
 ## Install lines: one constant
 
