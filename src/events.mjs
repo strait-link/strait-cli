@@ -79,7 +79,7 @@ await links.trackEvent('${n}');
 `,
   ios: (n) => `// strait: your StraitLinks instance (strait-sdk-swift README, "Use"). Never throws.
 // For revenue add value: 49.99, currency: "USD", eventId: order.id (a retry is counted once;
-// eventId needs StraitSDK ${VERSIONS.version}+, what strait init installs).
+// eventId needs StraitSDK ${VERSIONS.version}+: SwiftPM from: "${VERSIONS.version}").
 strait.trackEvent("${n}") { ok in
     // ok == false: not sent now; kept and sent later when it was the network
 }
