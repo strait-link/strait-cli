@@ -10,21 +10,22 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const walk = (d) => readdirSync(d).flatMap((n) => (n === 'node_modules' || n === '.git' ? [] : statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : [join(d, n)]));
 
 test('github and registry sources', () => {
-  // Versions as of 3 Nov 2026 (site.config.json packages = npm / pub.dev / JitPack): RN 0.10.2, Flutter 0.9.7, Android 0.8.4.
+  // Versions as of 5 Nov 2026 (site.config.json packages = npm / pub.dev / JitPack): RN 0.10.2, Flutter 0.9.7, Android 0.9.0.
   const gh = installSpecs({ source: 'github', githubOwner: 'strait-sdks' });
   assert.equal(gh.reactNative, 'github:strait-sdks/strait-sdk-react-native#v0.10.2');
-  assert.equal(gh.android, 'com.github.strait-sdks:strait-sdk-android:v0.8.4');
+  assert.equal(gh.android, 'com.github.strait-sdks:strait-sdk-android:v0.9.0');
   assert.equal(gh.androidRepository, 'https://jitpack.io');
   assert.match(gh.flutterPubspec, /url: https:\/\/github\.com\/strait-sdks\/strait-sdk-flutter\n {6}ref: v0\.9\.7/);
   const today = installSpecs();
   assert.equal(today.reactNative, '@straitlink/react-native@0.10.2', 'npm in registry mode (16 Oct)');
   assert.equal(today.flutterPubspec, '  strait_sdk: ^0.9.7', 'pub.dev in registry mode (16 Oct)');
-  assert.equal(today.android, `com.github.${INSTALL.githubOwner}:strait-sdk-android:v0.8.4`, 'Android stays on JitPack');
+  assert.equal(today.android, `com.github.${INSTALL.githubOwner}:strait-sdk-android:v0.9.0`, 'Android stays on JitPack');
   const reg = installSpecs({ ...INSTALL, source: 'registry' });
   assert.equal(reg.reactNative, '@straitlink/react-native@0.10.2');
-  assert.equal(reg.android, 'in.straitlink:strait-sdk-android:0.8.4');
+  assert.equal(reg.android, 'in.straitlink:strait-sdk-android:0.9.0');
   assert.equal(reg.flutterPubspec, '  strait_sdk: ^0.9.7');
   assert.equal(reg.androidRepository, null);
+  assert.equal(VERSIONS.version, '0.10.0', 'Swift tag v0.10.0 (SwiftPM)');
 });
 
 test('the owner is spelled out only in src/install.mjs', () => {

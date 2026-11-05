@@ -9,6 +9,7 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { detectProject } from './detect.mjs';
+import { PACKAGES, VERSIONS } from './install.mjs';
 import { UsageError, normalizeHost } from './validate.mjs';
 
 export const PLATFORMS = ['react-native', 'flutter', 'ios', 'android', 'web'];
@@ -77,13 +78,15 @@ await links.trackEvent('${n}');
 await links.trackEvent('${n}');
 `,
   ios: (n) => `// strait: your StraitLinks instance (strait-sdk-swift README, "Use"). Never throws.
-// For revenue add value: 49.99, currency: "USD", eventId: order.id (a retry is counted once).
+// For revenue add value: 49.99, currency: "USD", eventId: order.id (a retry is counted once;
+// eventId needs StraitSDK ${VERSIONS.version}+, what strait init installs).
 strait.trackEvent("${n}") { ok in
     // ok == false: not sent now; kept and sent later when it was the network
 }
 `,
   android: (n) => `// It sends on the calling thread: call it off the main thread. Never throws.
-// For revenue add value = 49.99, currency = "USD", eventId = order.id (a retry is counted once).
+// For revenue add value = 49.99, currency = "USD", eventId = order.id (a retry is counted once;
+// eventId needs ${PACKAGES.android} ${VERSIONS.androidVersion}+, what strait init installs).
 val ok = StraitLinks.client.trackEvent("${n}")
 `,
   web: (n, { key, host }) => `import { reportWebOpen, trackEvent } from '@straitlink/web';
