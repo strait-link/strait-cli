@@ -19,12 +19,13 @@ export const sourceFor = (src, registry) => (typeof src.source === 'string' ? sr
 /**
  * SDK versions the generated code is written for. Must equal site/site.config.json `packages`
  * (the one source of truth; test/install.test.mjs fails if they differ). Bump both together.
+ * `strait events add` reads them too: its iOS/Android eventId needs these SDKs.
  */
 export const VERSIONS = {
-  version: '0.9.5', // Swift (Unity is not written by this CLI)
+  version: '0.10.0', // Swift (Unity is not written by this CLI)
   rnVersion: '0.10.2',
   flutterVersion: '0.9.7',
-  androidVersion: '0.8.4',
+  androidVersion: '0.9.0',
 };
 
 export const PACKAGES = {
