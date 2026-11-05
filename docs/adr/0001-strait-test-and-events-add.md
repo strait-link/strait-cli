@@ -15,6 +15,7 @@ A developer with a secret key and an app, in a terminal or a CI job.
   the existing `runDoctor` on the workspace's link domain. `strait events add` prints the one call each
   SDK already has (`trackEvent` in React Native, Flutter, iOS, Android; the web SDK has no event helper,
   so it prints the same `POST /v1/event` its own example uses). No engine, SDK or database change.
+  *Update 5 Nov 2026:* the web SDK gained `trackEvent` (strait-sdk-web ADR 0002); the web snippet now prints it.
 - **New engine endpoint for a combined check.** Rejected: everything needed is already served.
 - **Write the event code into the user's files.** Rejected: we can't know where their purchase happens;
   printing is safe and reviewable.
