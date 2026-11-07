@@ -1,7 +1,7 @@
 // `strait events add <name>`: prints ready-to-paste tracking code (ADR 0001). Each snippet is the
 // SDK's own call, read from its source on 5 Nov 2026:
-//   React Native 0.10  links.trackEvent(name, { value, currency, eventId })        src/strait.ts
-//   Flutter 0.9        links.trackEvent(name, value:, currency:, linkId:, clickId:) lib/src/client.dart (no eventId)
+//   React Native 0.11  links.trackEvent(name, { value, currency, eventId })        src/strait.ts (0.10.2: no eventId)
+//   Flutter 0.10       links.trackEvent(name, value:, currency:, linkId:, clickId:, eventId:) lib/src/client.dart
 //   iOS 0.10           strait.trackEvent(_:value:currency:linkId:clickId:eventId:completion:)  StraitLinks.swift
 //   Android 0.8        client.trackEvent(name, value, currency, linkId, clickId, eventId)  StraitClient.kt (blocks)
 //   Web (Unreleased)   trackEvent(config, name, { value, currency, eventId })   src/index.ts (sdk-web ADR 0002)
@@ -68,13 +68,15 @@ const SNIPPETS = {
   'react-native': (n) => `import { links } from './links'; // the client strait init wrote; fix the path for this file
 
 // Resolves true when Strait took it; never throws. For revenue add
-// { value: 49.99, currency: 'USD', eventId: order.id } (eventId: a retry is counted once).
+// { value: 49.99, currency: 'USD', eventId: order.id } (eventId: a retry is counted once;
+// eventId needs ${PACKAGES.reactNative} 0.11.0+).
 await links.trackEvent('${n}');
 `,
   flutter: (n) => `import 'links.dart'; // lib/links.dart, the client strait init wrote
 
 // Resolves true when Strait took it; never throws. For revenue add
-// value: 49.99, currency: 'USD'
+// value: 49.99, currency: 'USD', eventId: order.id (eventId: a retry is counted once;
+// needs ${PACKAGES.flutter} 0.10.0+).
 await links.trackEvent('${n}');
 `,
   ios: (n) => `// strait: your StraitLinks instance (strait-sdk-swift README, "Use"). Never throws.

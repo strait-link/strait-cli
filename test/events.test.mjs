@@ -26,8 +26,8 @@ test('each platform prints its SDK\'s real event call with the name', async () =
   const want = {
     'react-native': [/import \{ links \} from '\.\/links'/, /await links\.trackEvent\('purchase'\);/, /value: 49\.99, currency: 'USD', eventId: order\.id/],
     flutter: [/import 'links\.dart';/, /await links\.trackEvent\('purchase'\);/, /value: 49\.99, currency: 'USD'/],
-    ios: [/strait\.trackEvent\("purchase"\) \{ ok in/, /eventId: order\.id/, /StraitSDK 0\.10\.0\+/],
-    android: [/StraitLinks\.client\.trackEvent\("purchase"\)/, /off the main thread/, /eventId = order\.id/, /strait-sdk-android 0\.9\.0\+/],
+    ios: [/strait\.trackEvent\("purchase"\) \{ ok in/, /eventId: order\.id/, /StraitSDK 0\.11\.0\+/],
+    android: [/StraitLinks\.client\.trackEvent\("purchase"\)/, /off the main thread/, /eventId = order\.id/, /strait-sdk-android 0\.10\.0\+/],
     web: [/import \{ reportWebOpen, trackEvent \} from '@straitlink\/web'/, /await reportWebOpen\(strait\);/, /await trackEvent\(strait, 'purchase'\);/, /value: 49\.99, currency: 'USD', eventId: order\.id/],
   };
   for (const [platform, patterns] of Object.entries(want)) {
@@ -37,9 +37,12 @@ test('each platform prints its SDK\'s real event call with the name', async () =
   }
 });
 
-test('Flutter has no eventId parameter, so its snippet never shows one', async () => {
-  const r = await run(['add', 'purchase', '--platform', 'flutter', FIXTURES]);
-  assert.doesNotMatch(r.out, /eventId/);
+test('Flutter 0.10 takes eventId; React Native names the version that has it', async () => {
+  const f = await run(['add', 'purchase', '--platform', 'flutter', FIXTURES]);
+  assert.match(f.out, /eventId: order\.id/);
+  assert.match(f.out, /strait_sdk 0\.10\.0\+/);
+  const rn = await run(['add', 'purchase', '--platform', 'react-native', FIXTURES]);
+  assert.match(rn.out, /@straitlink\/react-native 0\.11\.0\+/);
 });
 
 test('detects the platform from the project files', async () => {

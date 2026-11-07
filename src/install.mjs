@@ -22,10 +22,10 @@ export const sourceFor = (src, registry) => (typeof src.source === 'string' ? sr
  * `strait events add` reads them too: its iOS/Android eventId needs these SDKs.
  */
 export const VERSIONS = {
-  version: '0.10.0', // Swift (Unity is not written by this CLI)
+  version: '0.11.0', // Swift (Unity is not written by this CLI)
   rnVersion: '0.10.2',
-  flutterVersion: '0.9.7',
-  androidVersion: '0.9.0',
+  flutterVersion: '0.10.1',
+  androidVersion: '0.10.0',
 };
 
 export const PACKAGES = {
