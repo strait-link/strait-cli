@@ -11,8 +11,8 @@ import { HOST, KEY, sink } from './helpers.mjs';
 const VECTORS = new URL('./doctor-vectors.json', import.meta.url);
 const { vectors } = JSON.parse(readFileSync(VECTORS, 'utf8'));
 
-test('the 43 shared doctor vectors: same ids, severities and wording as the SDKs', () => {
-  assert.ok(vectors.length >= 43);
+test('the shared doctor vectors: same ids, severities and wording as the SDKs', () => {
+  assert.ok(vectors.length >= 49);
   for (const v of vectors) {
     const { file, appId, ...rest } = v.input;
     const report = doctorFindings({
@@ -104,6 +104,21 @@ test('doctor: unreachable host and missing file use the SDK wording', async () =
   assert.equal(r.code, 1);
   assert.match(r.out, /error\s+host\.unreachable\s+Can't reach acme\.strait\.link/);
   assert.match(r.out, /error\s+host\.file_missing\s+acme\.strait\.link doesn't serve apple-app-site-association/);
+});
+
+// User-lens audit item 10: the most common first-time state. The link domain is right, but Apps & stores is
+// empty, so Strait answers 404 {"error":"not configured"}. The fix is Apps & stores, as `strait init` says.
+test('doctor before Apps & stores is filled in: app.none with the Apps & stores fix, not "use your link domain"', async () => {
+  const notConfigured = [404, '{"error":"not configured"}'];
+  const r = await run(['doctor', '--host', HOST, '--android', 'com.acme.shop', '--ios', 'com.acme.shop'], {
+    fetch: fakeFetch({ 'assetlinks.json': notConfigured, 'apple-app-site-association': notConfigured }),
+  });
+  assert.equal(r.code, 1);
+  assert.doesNotMatch(r.out, /host\.file_missing|Use your Strait link domain as endpoint/);
+  assert.match(r.out, /error\s+app\.none\s+No Android app is set up for acme\.strait\.link/);
+  assert.match(r.out, /Fix: Fill in Dashboard → Apps & stores \(package name and SHA-256 fingerprint\), wait a minute, then check again\./);
+  assert.match(r.out, /error\s+app\.none\s+No iOS app is set up for acme\.strait\.link/);
+  assert.match(r.out, /Fix: Fill in Dashboard → Apps & stores \(Team ID and bundle ID\), wait a minute, then check again\./);
 });
 
 test('doctor: a secret key is flagged and never printed', async () => {
