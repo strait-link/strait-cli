@@ -66,7 +66,7 @@ Exit codes: `0` done, `2` usage problem (message on stderr), `1` unexpected erro
 npx @straitlink/cli doctor --host acme.strait.link --android com.acme.shop --ios com.acme.shop
 ```
 
-Runs the same checks, with the same finding ids and wording, as `doctor()` in the Strait SDKs (React Native 0.9.3, Swift 0.9.4, Android 0.8.4, Flutter 0.9.4; contract B23, the shared cases in `test/doctor-vectors.json`). It fetches `https://<host>/.well-known/assetlinks.json` and `apple-app-site-association` once each and tells you whether your package, bundle ID and (with `--cert`) signing certificate are listed, with the fix for each problem:
+Runs the same checks, with the same finding ids and wording, as `doctor()` in the Strait SDKs (React Native, Flutter, iOS, Android and Unity; contract B23, the shared cases in `test/doctor-vectors.json`). It fetches `https://<host>/.well-known/assetlinks.json` and `apple-app-site-association` once each and tells you whether your package, bundle ID and (with `--cert`) signing certificate are listed, with the fix for each problem:
 
 ```
 Android (assetlinks.json)

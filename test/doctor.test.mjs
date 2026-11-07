@@ -12,7 +12,7 @@ const VECTORS = new URL('./doctor-vectors.json', import.meta.url);
 const { vectors } = JSON.parse(readFileSync(VECTORS, 'utf8'));
 
 test('the shared doctor vectors: same ids, severities and wording as the SDKs', () => {
-  assert.ok(vectors.length >= 49);
+  assert.ok(vectors.length >= 51);
   for (const v of vectors) {
     const { file, appId, ...rest } = v.input;
     const report = doctorFindings({
