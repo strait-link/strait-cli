@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.3.1 (7 Nov 2026)
 
+- `strait init` writes React Native 0.11.0 (now on npm, was 0.10.2).
 - `strait doctor` and `strait test`: on a link domain before Dashboard → Apps & stores is filled in (Strait answers 404 `{"error":"not configured"}`), the finding is `app.none` with "Fill in Dashboard → Apps & stores (package name and SHA-256 fingerprint / Team ID and bundle ID), wait a minute, then check again", the same step `strait init` gives, not `host.file_missing` ("use your Strait link domain as endpoint"). Same wording as `doctor()` in the SDKs (51 shared vectors, shared-spec ADR 0002 amendment).
 
 ## 0.3.0 (7 Nov 2026)
