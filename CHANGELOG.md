@@ -2,7 +2,8 @@
 
 ## 0.3.0 (7 Nov 2026)
 
-- `strait init` writes setup for today's SDKs: Android 0.10.0 (JitPack), iOS 0.11.0 (SwiftPM), React Native 0.11.0 and Flutter 0.10.1 (was 0.8.4, 0.9.5, 0.10.2 and 0.9.7). `strait events add` reads the same versions and says the iOS/Android `eventId` needs them.
+- `strait events add`: the Flutter snippet shows `eventId` (strait_sdk 0.10.0+ has it); the React Native one says `eventId` needs 0.11.0+.
+- `strait init` writes setup for today's SDKs: Android 0.10.0 (JitPack), iOS 0.11.0 (SwiftPM), and Flutter 0.10.1 (was 0.8.4, 0.9.5 and 0.9.7); React Native stays 0.10.2 until 0.11.0 is on npm. `strait events add` reads the same versions and says the iOS/Android `eventId` needs them.
 - `strait test`: one pass/fail list that says you're set up right: the engine answers, the secret key is valid (which workspace, test or live), and the workspace's link domain serves apple-app-site-association and assetlinks.json. Exit 1 on any failure, `--json` for CI.
 - `strait events add <name>`: prints ready-to-paste event tracking code for React Native, Flutter, iOS, Android or the web (detected from the project files, or `--platform`), using each SDK's real `trackEvent` call.
 - `strait events add --platform web` prints `@straitlink/web`'s new `trackEvent` instead of a hand-written `POST /v1/event` (needs the web SDK release that adds it).

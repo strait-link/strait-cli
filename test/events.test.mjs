@@ -37,9 +37,12 @@ test('each platform prints its SDK\'s real event call with the name', async () =
   }
 });
 
-test('Flutter has no eventId parameter, so its snippet never shows one', async () => {
-  const r = await run(['add', 'purchase', '--platform', 'flutter', FIXTURES]);
-  assert.doesNotMatch(r.out, /eventId/);
+test('Flutter 0.10 takes eventId; React Native names the version that has it', async () => {
+  const f = await run(['add', 'purchase', '--platform', 'flutter', FIXTURES]);
+  assert.match(f.out, /eventId: order\.id/);
+  assert.match(f.out, /strait_sdk 0\.10\.0\+/);
+  const rn = await run(['add', 'purchase', '--platform', 'react-native', FIXTURES]);
+  assert.match(rn.out, /@straitlink\/react-native 0\.11\.0\+/);
 });
 
 test('detects the platform from the project files', async () => {
