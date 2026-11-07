@@ -24,7 +24,7 @@ export const sourceFor = (src, registry) => (typeof src.source === 'string' ? sr
 export const VERSIONS = {
   version: '0.11.0', // Swift (Unity is not written by this CLI)
   rnVersion: '0.11.0',
-  flutterVersion: '0.10.0',
+  flutterVersion: '0.10.1',
   androidVersion: '0.10.0',
 };
 
