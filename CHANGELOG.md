@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2 (8 Nov 2026)
+
+- `strait init` writes the SDKs that carry the `doctor()` "Apps & stores" fix: Android 0.10.1 (JitPack), iOS 0.11.1 (SwiftPM) and Flutter 0.10.2 (was 0.10.0, 0.11.0 and 0.10.1), so an app set up with `init` gets the same next step from `doctor()` as from `strait doctor`.
+
 ## 0.3.1 (7 Nov 2026)
 
 - `strait init` writes React Native 0.11.0 (now on npm, was 0.10.2).
