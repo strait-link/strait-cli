@@ -1,6 +1,6 @@
 {
   "name": "@straitlink/cli",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Strait deep links from the terminal: init sets them up in a React Native, Expo, Flutter or Android app, doctor checks your link host, links creates and lists links and saves QR codes.",
   "keywords": [
     "strait",
@@ -35,7 +35,8 @@
   ],
   "scripts": {
     "test": "node --test test/*.test.mjs",
-    "ttfl": "node scripts/time-to-first-link.mjs"
+    "ttfl": "node scripts/time-to-first-link.mjs",
+    "check:sdk-versions": "node scripts/check-sdk-versions.mjs"
   },
   "engines": {
     "node": ">=18.17"

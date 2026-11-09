@@ -35,6 +35,8 @@ jobs:
           got="$(node -p "require('./package.json').repository.url")"
           [ "$got" = "$want" ] || { echo "::error::repository.url is $got, expected $want"; exit 1; }
       - run: npm test
+      - name: SDK pins are the registries' latest (never publish a CLI that installs old SDKs)
+        run: npm run check:sdk-versions
       - run: npm pack --dry-run
       - name: Already on npm? (a hand-published version runs the tests and skips the publish)
         id: published

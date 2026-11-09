@@ -1,2 +1,2 @@
 // Kept equal to package.json version (test/links.test.mjs checks it). Sent as the API User-Agent.
-export const CLI_VERSION = '0.3.3';
+export const CLI_VERSION = '0.3.4';

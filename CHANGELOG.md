@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.4 (9 Nov 2026)
+
+- `strait init` and `strait events add` write today's SDKs: React Native 0.11.3 (npm), Flutter 0.10.6 (pub.dev), iOS 0.11.4 (SwiftPM) and Android 0.10.4 (JitPack) (was 0.11.0, 0.10.2, 0.11.1 and 0.10.1). A new app now starts with the install campaign tags, the SDK naming itself in its reports, and iPhone install matching across IPv4 / IPv6.
+- These can't fall behind again: CI checks every pin against npm, pub.dev and the SDK tags on each push, every day, and before each release, and fails when one is older than the latest (`npm run check:sdk-versions`).
+
 ## 0.3.3 (9 Nov 2026)
 
 - `strait init` for Flutter and Android (Kotlin) adds the INTERNET permission to `AndroidManifest.xml` when it's missing. Flutter's template declares it only for debug and profile builds, so a release build couldn't reach Strait (no deferred match, no install recorded). The edit is one line after `<manifest>`, made once (a second run leaves the file alone), listed under "Edited:" and shown by `--dry-run` without writing. React Native and Expo are unchanged: their templates already have it.
