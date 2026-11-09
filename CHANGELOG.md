@@ -4,7 +4,7 @@
 
 - `strait app verify`: one command that says what's wrong with your setup and how to fix it. The same checks as Dashboard › Setup › Integration health (app details, each link domain's files fetched live, SDK reporting in and current, link opens, webhooks), one line each, with the fix under anything that isn't a pass. Exit 1 when a check fails or couldn't run, `--json` for AI agents and CI. Needs a secret key (`STRAIT_SECRET_KEY`, read or full access).
 - `strait app`: the setup Strait has for your workspace: Android package and fingerprints, iPhone App ID, each link domain and whether its files are served, and the SDK version each platform last sent.
-- `strait doctor` with a secret key also runs `strait app verify` and prints its checks under "Account" (`--host` is then optional). Checks that can't run say "Could not check" and fail the run.
+- `strait doctor` with a secret key also runs `strait app verify` and prints its checks under "Account" (`--host` is then optional). Checks that can't run say "Could not check" and fail the run. **Behaviour change:** a CI job that already sets `STRAIT_SECRET_KEY` now gets these account checks in `doctor` too (and exit 1 on an account failure); to keep a host-only check, run `env -u STRAIT_SECRET_KEY npx @straitlink/cli doctor --host …`.
 
 ## 0.3.4 (9 Nov 2026)
 

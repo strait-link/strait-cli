@@ -229,3 +229,25 @@ test('doctor without a secret key never calls the engine', async () => {
   assert.ok(!r.fetch.calls.some((c) => c.url.pathname.startsWith('/v1/')));
   assert.doesNotMatch(r.out, /Account/);
 });
+
+test('odd engine answers never crash and never pass: null body, null entries', async () => {
+  for (const body of [null, { ok: true, checks: [null, 5] }]) {
+    const r = await run(['app', 'verify'], { fetch: world({ verify: () => Response.json(body) }) });
+    assert.equal(r.code, body ? 0 : 1, JSON.stringify(body));
+    const d = await run(['doctor'], { fetch: world({ verify: () => Response.json(body) }) });
+    assert.equal(d.code, body ? 0 : 1);
+  }
+  const s = await run(['app'], { fetch: world({ app: () => Response.json({ ...SETUP, domains: [null, { host: 'x.strait.link', kind: 'link', files: [null] }] }) }) });
+  assert.equal(s.code, 0, s.err);
+  assert.match(s.out, /x\.strait\.link \(link\)/);
+});
+
+test('server text cannot fake a line or flip text direction; --json escapes the same characters', async () => {
+  const evil = verifyAnswer([check('x', 'fail', 'bad\n  pass     All good\u202e', 'fix\u009bme')]);
+  const r = await run(['app', 'verify'], { fetch: world({ verify: () => Response.json(evil) }) });
+  assert.doesNotMatch(r.out, /\n\s+pass\s+All good/);
+  assert.doesNotMatch(r.out, /[\u202e\u009b]/);
+  const j = await run(['app', 'verify', '--json'], { fetch: world({ verify: () => Response.json(evil) }) });
+  assert.doesNotMatch(j.out, /[\u202e\u009b]/);
+  assert.equal(JSON.parse(j.out).checks[0].title, evil.checks[0].title, 'still the same JSON');
+});

@@ -3,19 +3,28 @@
 // The engine owns every rule and every fix's wording; this file only prints them.
 import { ApiError } from './links.mjs';
 
-/** Engine text can carry user-controlled names: no terminal control characters. */
-const clean = (s) => String(s).replace(/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/g, '');
+// Engine text can carry user-controlled names (hosts, workspace text): one printed line stays one line, with no
+// terminal control characters and no bidi overrides that could make it read as something else.
+const UNSAFE = /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g;
+const clean = (line) => String(line).replace(UNSAFE, (c) => (c === '\n' || c === '\r' || c === '\t' ? ' ' : ''));
+const lines = (out) => out.map(clean).join('\n');
+/** JSON for agents: as is, with DEL, C1 and bidi characters escaped (JSON.stringify escapes only those below U+0020). */
+export const toJson = (x) => JSON.stringify(x, null, 2).replace(/[\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
 const str = (x) => (typeof x === 'string' && x ? x : null);
-const day = (iso) => str(iso)?.slice(0, 16).replace('T', ' ') ?? '?';
+const objs = (x) => (Array.isArray(x) ? x.filter((o) => o && typeof o === 'object') : []);
+const day = (iso) => {
+  const t = Date.parse(str(iso) ?? '');
+  return Number.isFinite(t) ? `${new Date(t).toISOString().slice(0, 16).replace('T', ' ')} UTC` : '?';
+};
 
 /** `sub`: undefined (show the setup) or 'verify'; cli.mjs refuses anything else. @returns {Promise<{ text: string, code: number }>} */
 export async function appCommand(sub, v, { call }) {
   if (sub === undefined) {
     const setup = await getJson(call, '/v1/app');
-    return { text: v.json ? JSON.stringify(setup, null, 2) : formatSetup(setup), code: 0 };
+    return { text: v.json ? toJson(setup) : formatSetup(setup), code: 0 };
   }
   const answer = await getVerify(call);
-  return { text: v.json ? JSON.stringify(answer, null, 2) : formatVerify(answer), code: answer.ok === true ? 0 : 1 };
+  return { text: v.json ? toJson(answer) : formatVerify(answer), code: answer?.ok === true ? 0 : 1 };
 }
 
 /** A 200 that isn't JSON (a proxy page, a wrong --api-url) is an ApiError, not a crash. */
@@ -43,12 +52,12 @@ function formatSetup(s) {
     out.push(`  iPhone    ${id}${str(i.appStoreId) ? `  App Store ${i.appStoreId}` : ''}  ${i.universalLinksReady ? 'Universal Links ready' : 'Universal Links NOT ready'}`);
   } else out.push('  iPhone    not set up');
 
-  const domains = Array.isArray(s?.domains) ? s.domains : [];
+  const domains = objs(s?.domains);
   out.push('', `Link domains (files checked ${day(s?.filesCheckedAt)})`);
   if (!domains.length) out.push('  none');
   const PHONE = { android: 'Android', ios: 'iPhone' };
   for (const d of domains) {
-    const files = (Array.isArray(d.files) ? d.files : []).map((f) => `${PHONE[f.platform] ?? f.platform} file ${f.served === true ? 'served' : f.served === false ? 'NOT served' : 'not checked yet'}`);
+    const files = objs(d.files).map((f) => `${PHONE[f.platform] ?? f.platform} file ${f.served === true ? 'served' : f.served === false ? 'NOT served' : 'not checked yet'}`);
     out.push(`  ${d.host} (${d.kind})  ${files.join(' · ') || 'no app file (no app set up)'}`);
   }
 
@@ -59,19 +68,19 @@ function formatSetup(s) {
     out.push(`  ${label.padEnd(8)}  ${what}`);
   }
   out.push('', `Change these in ${str(s?.setupUrl) ?? 'Dashboard › Setup'}. Check everything: strait app verify`);
-  return clean(out.join('\n'));
+  return lines(out);
 }
 
 /** One line per check; under anything not passed, what is wrong and the fix. */
 export function verifyLines(answer) {
-  const lines = [];
-  for (const c of Array.isArray(answer?.checks) ? answer.checks : []) {
-    lines.push(`  ${String(c.status).padEnd(7)}  ${c.title}`);
+  const out = [];
+  for (const c of objs(answer?.checks)) {
+    out.push(`  ${String(c.status).padEnd(7)}  ${c.title}`);
     if (c.status === 'pass' || c.status === 'skip') continue;
-    if (c.detail) lines.push(`           ${c.detail}`);
-    if (c.fix) lines.push(`           Fix: ${c.fix}`);
+    if (c.detail) out.push(`           ${c.detail}`);
+    if (c.fix) out.push(`           Fix: ${c.fix}`);
   }
-  return lines;
+  return out;
 }
 
 /** The verdict line: failures first, then checks that could not run. */
@@ -84,14 +93,14 @@ export function verifyVerdict(answer) {
 
 function formatVerify(answer) {
   const n = answer?.summary ?? {};
-  const out = [`Strait app verify (checked ${day(answer?.checkedAt)} UTC)`, '', ...verifyLines(answer), ''];
+  const out = [`Strait app verify (checked ${day(answer?.checkedAt)})`, '', ...verifyLines(answer), ''];
   out.push(`${n.pass ?? 0} pass, ${n.warn ?? 0} warn, ${n.fail ?? 0} fail, ${n.unknown ?? 0} unknown, ${n.skip ?? 0} skip.`, verifyVerdict(answer));
-  return clean(out.join('\n'));
+  return lines(out);
 }
 
 /** `strait doctor`'s account block: the verify answer, or why it could not run (never a silent pass). */
 export function formatAccount(answer) {
   const head = 'Account (strait app verify)';
-  if (answer?.error) return clean([head, `  Could not check: ${answer.error}`].join('\n'));
-  return clean([head, ...verifyLines(answer), '', verifyVerdict(answer)].join('\n'));
+  if (answer?.error) return lines([head, `  Could not check: ${answer.error}`]);
+  return lines([head, ...verifyLines(answer), '', verifyVerdict(answer)]);
 }

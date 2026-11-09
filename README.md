@@ -83,7 +83,7 @@ Android (assetlinks.json)
 | `--key` | Also check the publishable key. Env: `STRAIT_PUBLISHABLE_KEY`. Left out, the key check is skipped |
 | `--json` | The reports as JSON, for CI and agents |
 
-With a secret key (`STRAIT_SECRET_KEY` or `--secret-key`), `doctor` also runs [`strait app verify`](#whats-wrong-with-my-setup-strait-app-verify) and prints its checks under "Account"; `--host` is then optional. If those checks can't run (a refused key, no connection) it says "Could not check" and exits `1`, never a silent pass. `--json` adds them as `verify`.
+With a secret key (`STRAIT_SECRET_KEY` or `--secret-key`), `doctor` also runs [`strait app verify`](#whats-wrong-with-my-setup-strait-app-verify) and prints its checks under "Account"; `--host` is then optional. If those checks can't run (a refused or malformed key, no connection, the 6-a-minute limit) it says "Could not check" and exits `1`, never a silent pass. `--json` adds them as `verify`. If your CI sets `STRAIT_SECRET_KEY` and should check only the host, unset it for the doctor step (`env -u STRAIT_SECRET_KEY npx @straitlink/cli doctor --host …`).
 
 Exit codes: `0` no errors (warnings allowed), `1` a check failed, `2` usage problem. What a terminal can't see (intent filters, the Associated Domains entitlement) is checked by `doctor()` inside a debug build and by the [free tools](https://straitlink.in/tools/).
 
@@ -145,7 +145,7 @@ Strait app verify (checked 2026-11-09 17:44 UTC)
 No failures. Check the warnings above.
 ```
 
-The same checks as Dashboard › Setup › Integration health, from the API (`GET /v1/app`, `GET /v1/app/verify`): your Android and iPhone app details, each link domain's `assetlinks.json` and `apple-app-site-association` (fetched live), whether your app has reported in the last 24 hours, whether its SDK is current, whether app opens from a link show their screen, and webhooks. Exit `0` when nothing failed, `1` when a check failed or could not run (so an AI agent or CI job can loop until it passes), `2` for a missing or wrong kind of key. `--json` prints the API answer as is (`{ ok, summary, checks: [{ id, status, title, detail, fix }] }`). Nothing secret is printed: no keys, emails or webhook URLs.
+The same checks as Dashboard › Setup › Integration health, from the API (`GET /v1/app`, `GET /v1/app/verify`): your Android and iPhone app details, each link domain's `assetlinks.json` and `apple-app-site-association` (fetched live), whether your app has reported in the last 24 hours, whether its SDK is current, whether app opens from a link show their screen, and webhooks. Exit `0` when nothing failed, `1` when a check failed or could not run, or the API refused the key (so an AI agent or CI job can loop until it passes), `2` for a missing or non-secret key. `--json` prints the API answer as is (`{ ok, checkedAt, summary, checks: [{ id, status, title, detail, fix, host?, platform? }] }`). Nothing secret is printed: no keys, emails or webhook URLs.
 
 ## Track an event: `strait events add`
 

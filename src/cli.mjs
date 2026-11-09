@@ -11,7 +11,7 @@ import { ApiError, DEFAULT_API_URL, apiClient, linksCommand, secretKey } from '.
 import { CLI_VERSION } from './version.mjs';
 import { formatSelfTest, runSelfTest } from './selftest.mjs';
 import { eventsCommand } from './events.mjs';
-import { appCommand, formatAccount, getVerify } from './app.mjs';
+import { appCommand, formatAccount, getVerify, toJson } from './app.mjs';
 
 const OPTIONS = {
   init: {
@@ -67,7 +67,7 @@ export const HELP = `strait: set up and check Strait deep links, and manage link
 
 Usage
   strait init [dir] [options]                 Write the Strait integration into your app
-  strait doctor --host <host> [options]       Check your link host is set up for your app
+  strait doctor [--host <host>] [options]     Check your link host (and with a secret key, your whole setup)
   strait links create <slug> <url> [options]  Create a link
   strait links list [options]                 List links
   strait links qr <slug> [options]            Save a link's QR code
@@ -92,7 +92,9 @@ doctor options (the same checks and messages as doctor() in the SDKs)
   --ios <bundleId>        iPhone bundle ID, e.g. com.acme.shop
   --cert <sha256>         Android signing certificate fingerprint (repeatable)
   --key <st_pub_live_…>   Also check the publishable key (env STRAIT_PUBLISHABLE_KEY)
-  --secret-key <st_live_…>  Also run strait app verify (env STRAIT_SECRET_KEY); --host is then optional
+  --secret-key <st_live_…>  Also run strait app verify (env STRAIT_SECRET_KEY); --host is then optional.
+                          If it can't run (refused key, no connection), doctor says so and exits 1
+  --api-url <url>         Engine for those checks (env STRAIT_API_URL, default https://strait.link)
   --json                  Print the reports as JSON
   With neither --android nor --ios, both files are checked and the apps they list are shown.
   Exit 1 when a check fails.
@@ -118,7 +120,8 @@ app options
   --json                  Print the API answer as JSON (for agents and CI)
   strait app prints the apps, link domains and SDKs Strait has for your workspace. strait app verify
   runs the same checks as Dashboard › Setup › Integration health and prints each with its fix.
-  Exit 1 when a check fails or could not run, 2 for a missing or wrong kind of key.
+  Exit 1 when a check fails or could not run (or the API refuses the key), 2 for a missing or
+  non-secret key.
 
 events options
   --platform <name>       react-native | flutter | ios | android | web (detected by default)
@@ -262,7 +265,7 @@ async function doctor({ values: v }, { out, env, io }) {
     }
     if (result.verify?.ok !== true) result.ok = false;
   }
-  const text = v.json ? JSON.stringify(result, null, 2) : [hostIn && formatDoctor(result), secretIn && formatAccount(result.verify)].filter(Boolean).join('\n\n');
+  const text = v.json ? toJson(result) : [hostIn && formatDoctor(result), secretIn && formatAccount(result.verify)].filter(Boolean).join('\n\n');
   out.write(text + '\n');
   return result.ok ? 0 : 1;
 }
