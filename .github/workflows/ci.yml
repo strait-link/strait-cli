@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: '17 3 * * *' # daily: an SDK released since the last push turns CI red (sdk-versions)
 permissions:
   contents: read
 jobs:
@@ -17,3 +19,14 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm test
+  sdk-versions:
+    # Fails when src/install.mjs pins an SDK older than npm / pub.dev / the SDK tags (docs/adr/0002).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - run: npm run check:sdk-versions

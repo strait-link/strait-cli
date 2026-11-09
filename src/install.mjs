@@ -17,15 +17,16 @@ export const INSTALL = {
 export const sourceFor = (src, registry) => (typeof src.source === 'string' ? src.source : src.source[registry]);
 
 /**
- * SDK versions the generated code is written for. Must equal site/site.config.json `packages`
- * (the one source of truth; test/install.test.mjs fails if they differ). Bump both together.
+ * SDK versions the generated code is written for: always the registry's latest. CI fails when one is
+ * older (`npm run check:sdk-versions`, docs/adr/0002). Bump site/site.config.json `packages` too
+ * (test/install.test.mjs compares them when the site repo sits next to this one).
  * `strait events add` reads them too: its iOS/Android eventId needs these SDKs.
  */
 export const VERSIONS = {
-  version: '0.11.1', // Swift (Unity is not written by this CLI)
-  rnVersion: '0.11.0',
-  flutterVersion: '0.10.2',
-  androidVersion: '0.10.1',
+  version: '0.11.4', // Swift (Unity is not written by this CLI)
+  rnVersion: '0.11.3',
+  flutterVersion: '0.10.6',
+  androidVersion: '0.10.4',
 };
 
 export const PACKAGES = {

@@ -10,22 +10,23 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const walk = (d) => readdirSync(d).flatMap((n) => (n === 'node_modules' || n === '.git' ? [] : statSync(join(d, n)).isDirectory() ? walk(join(d, n)) : [join(d, n)]));
 
 test('github and registry sources', () => {
-  // Versions as of 8 Nov 2026 (site.config.json packages = npm / pub.dev / JitPack): RN 0.11.0, Flutter 0.10.2, Android 0.10.1.
+  // Install-line formats; the numbers come from VERSIONS (kept at the registry's latest by scripts/check-sdk-versions.mjs).
+  const { rnVersion: rn, flutterVersion: fl, androidVersion: an } = VERSIONS;
   const gh = installSpecs({ source: 'github', githubOwner: 'strait-sdks' });
-  assert.equal(gh.reactNative, 'github:strait-sdks/strait-sdk-react-native#v0.11.0');
-  assert.equal(gh.android, 'com.github.strait-sdks:strait-sdk-android:v0.10.1');
+  assert.equal(gh.reactNative, `github:strait-sdks/strait-sdk-react-native#v${rn}`);
+  assert.equal(gh.android, `com.github.strait-sdks:strait-sdk-android:v${an}`);
   assert.equal(gh.androidRepository, 'https://jitpack.io');
-  assert.match(gh.flutterPubspec, /url: https:\/\/github\.com\/strait-sdks\/strait-sdk-flutter\n {6}ref: v0\.10\.2/);
+  assert.ok(gh.flutterPubspec.includes(`url: https://github.com/strait-sdks/strait-sdk-flutter\n      ref: v${fl}`));
   const today = installSpecs();
-  assert.equal(today.reactNative, '@straitlink/react-native@0.11.0', 'npm in registry mode (16 Oct)');
-  assert.equal(today.flutterPubspec, '  strait_sdk: ^0.10.2', 'pub.dev in registry mode (16 Oct)');
-  assert.equal(today.android, `com.github.${INSTALL.githubOwner}:strait-sdk-android:v0.10.1`, 'Android stays on JitPack');
+  assert.equal(today.reactNative, `@straitlink/react-native@${rn}`, 'npm in registry mode (16 Oct)');
+  assert.equal(today.flutterPubspec, `  strait_sdk: ^${fl}`, 'pub.dev in registry mode (16 Oct)');
+  assert.equal(today.android, `com.github.${INSTALL.githubOwner}:strait-sdk-android:v${an}`, 'Android stays on JitPack');
   const reg = installSpecs({ ...INSTALL, source: 'registry' });
-  assert.equal(reg.reactNative, '@straitlink/react-native@0.11.0');
-  assert.equal(reg.android, 'in.straitlink:strait-sdk-android:0.10.1');
-  assert.equal(reg.flutterPubspec, '  strait_sdk: ^0.10.2');
+  assert.equal(reg.reactNative, `@straitlink/react-native@${rn}`);
+  assert.equal(reg.android, `in.straitlink:strait-sdk-android:${an}`);
+  assert.equal(reg.flutterPubspec, `  strait_sdk: ^${fl}`);
   assert.equal(reg.androidRepository, null);
-  assert.equal(VERSIONS.version, '0.11.1', 'Swift tag v0.11.1 (SwiftPM)');
+  for (const v of Object.values(VERSIONS)) assert.match(v, /^\d+\.\d+\.\d+$/);
 });
 
 test('the owner is spelled out only in src/install.mjs', () => {

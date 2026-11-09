@@ -6,6 +6,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { main } from '../src/cli.mjs';
 import { FIXTURES, sink } from './helpers.mjs';
+import { VERSIONS } from '../src/install.mjs';
+
+const lit = (s) => new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 
 const run = async (args, { env = {} } = {}) => {
   const stdout = sink();
@@ -26,8 +29,8 @@ test('each platform prints its SDK\'s real event call with the name', async () =
   const want = {
     'react-native': [/import \{ links \} from '\.\/links'/, /await links\.trackEvent\('purchase'\);/, /value: 49\.99, currency: 'USD', eventId: order\.id/],
     flutter: [/import 'links\.dart';/, /await links\.trackEvent\('purchase'\);/, /value: 49\.99, currency: 'USD'/],
-    ios: [/strait\.trackEvent\("purchase"\) \{ ok in/, /eventId: order\.id/, /StraitSDK 0\.11\.1\+/],
-    android: [/StraitLinks\.client\.trackEvent\("purchase"\)/, /off the main thread/, /eventId = order\.id/, /strait-sdk-android 0\.10\.1\+/],
+    ios: [/strait\.trackEvent\("purchase"\) \{ ok in/, /eventId: order\.id/, lit(`StraitSDK ${VERSIONS.version}+`)],
+    android: [/StraitLinks\.client\.trackEvent\("purchase"\)/, /off the main thread/, /eventId = order\.id/, lit(`strait-sdk-android ${VERSIONS.androidVersion}+`)],
     web: [/import \{ reportWebOpen, trackEvent \} from '@straitlink\/web'/, /await reportWebOpen\(strait\);/, /await trackEvent\(strait, 'purchase'\);/, /value: 49\.99, currency: 'USD', eventId: order\.id/],
   };
   for (const [platform, patterns] of Object.entries(want)) {
