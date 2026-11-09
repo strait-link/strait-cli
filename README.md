@@ -34,7 +34,7 @@ npx @straitlink/cli events add purchase                     # print the code tha
 
 4. Prints the remaining steps for your app: the install command, the AndroidManifest intent filters (or the `app.json` block for Expo), the iPhone Associated Domains entry, what to fill in under Dashboard → Apps & stores, and the `curl` checks for `assetlinks.json` and `apple-app-site-association`. Steps the project already has, such as the intent filters, are marked `[already done]`.
 
-It never edits your existing files and never overwrites an earlier integration file unless you pass `--force`.
+It edits one existing file, and only when needed: in a Flutter or Android (Kotlin) app it adds `<uses-permission android:name="android.permission.INTERNET" />` to `AndroidManifest.xml` if it isn't there. Flutter's own template only has it in debug builds, so without it a release build can't reach Strait and no link or install is matched. Everything else it prints for you to add. It never overwrites an earlier integration file unless you pass `--force`, and `--dry-run` shows the manifest line without writing it.
 
 ## Use
 

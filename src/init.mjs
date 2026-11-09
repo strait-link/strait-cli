@@ -1,8 +1,8 @@
 // `strait init`: detect the app, collect key + host + scheme, write the
 // integration file(s), print the platform steps. Pure planning is separated from
 // writing so --dry-run and the tests see exactly what would happen.
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
 import { FRAMEWORKS, LABELS, describeFolder, detectProject } from './detect.mjs';
 import { INSTALL } from './install.mjs';
 import { integrationFiles, nextSteps } from './templates.mjs';
@@ -11,7 +11,7 @@ import { UsageError, normalizeHost, normalizeKey, normalizeScheme, suggestScheme
 /**
  * Works out everything without touching the disk.
  * @param {object} o { dir, key, host, scheme, framework, force }
- * @returns {{ project, opts, files: Array<{path, abs, contents, why, exists}>, steps, conflicts: string[] }}
+ * @returns {{ project, opts, files: Array<{path, abs, contents, why, exists}>, edits: Array<{path, abs, contents, why, line}>, steps, conflicts: string[] }}
  */
 export function planInit({ dir, key, host, scheme, framework, force = false, installSource = INSTALL }) {
   const root = resolve(dir ?? '.');
@@ -39,7 +39,32 @@ export function planInit({ dir, key, host, scheme, framework, force = false, ins
     return { ...f, abs, exists: existsSync(abs) };
   });
   const conflicts = force ? [] : files.filter((f) => f.exists).map((f) => f.path);
-  return { project, opts, schemeGuessedFrom, files, steps: nextSteps(project, opts, installSource), conflicts };
+  return { project, opts, schemeGuessedFrom, files, edits: manifestEdits(project, root), steps: nextSteps(project, opts, installSource), conflicts };
+}
+
+// Flutter's template declares INTERNET only in the debug/profile manifests and an Android Studio
+// template not at all, so a release build can't reach Strait (QA 9 Nov 2026). React Native's and
+// Expo's templates already have it.
+const INTERNET = '<uses-permission android:name="android.permission.INTERNET" />';
+
+function manifestEdits(project, root) {
+  if (!['flutter', 'android'].includes(project.framework) || !project.manifestPath) return [];
+  const contents = addInternetPermission(readFileSync(project.manifestPath, 'utf8'));
+  if (!contents) return [];
+  const path = relative(root, project.manifestPath).split('\\').join('/');
+  return [{ path, abs: project.manifestPath, contents, line: INTERNET, why: 'adds the INTERNET permission release builds need' }];
+}
+
+/** The manifest with INTERNET added right after <manifest …>, or null when it already has it (or isn't a manifest). */
+export function addInternetPermission(text) {
+  const live = text.replace(/<!--[\s\S]*?-->/g, (c) => ' '.repeat(c.length)); // same length: indexes still match text
+  if (/<uses-permission\b[^>]*android:name\s*=\s*"android\.permission\.INTERNET"/.test(live)) return null;
+  const open = /<manifest\b[^>]*>/.exec(live);
+  if (!open) return null;
+  const eol = text.includes('\r\n') ? '\r\n' : '\n';
+  const at = open.index + open[0].length;
+  const pad = /\n([ \t]*)\S/.exec(live.slice(at))?.[1] || '    '; // the next element's indent
+  return `${text.slice(0, at)}${eol}${pad}${INTERNET}${text.slice(at)}`;
 }
 
 function emptyProject(dir) {
@@ -53,7 +78,8 @@ export function writeFiles(plan) {
     mkdirSync(dirname(f.abs), { recursive: true });
     writeFileSync(f.abs, f.contents);
   }
-  return plan.files.map((f) => f.path);
+  for (const e of plan.edits ?? []) writeFileSync(e.abs, e.contents);
+  return [...plan.files, ...(plan.edits ?? [])].map((f) => f.path);
 }
 
 // ---------- output ----------
@@ -86,11 +112,21 @@ export function formatPlan(plan, { dryRun = false } = {}) {
   // A conflict is a file the real run refuses to overwrite (no --force): never call it replaced.
   const label = (f) => (plan.conflicts.includes(f.path) ? ' (already exists: kept unless --force)' : f.exists ? ' (replaced)' : '');
   for (const f of files) out.push(`  ${f.path}${label(f)}  ${f.why}`);
+  if (plan.edits?.length) {
+    out.push('');
+    out.push(dryRun ? 'Would edit:' : 'Edited:');
+    for (const e of plan.edits) out.push(`  ${e.path}  ${e.why}`);
+  }
   if (dryRun) {
     for (const f of files) {
       out.push('');
       out.push(`--- ${f.path}`);
       out.push(f.contents.trimEnd());
+    }
+    for (const e of plan.edits ?? []) {
+      out.push('');
+      out.push(`--- ${e.path}`);
+      out.push(`+    ${e.line}`);
     }
   }
   out.push('');
