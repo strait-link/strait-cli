@@ -353,6 +353,9 @@ export function nextSteps(project, opts, installSrc) {
     const needsFlutterMeta = fw === 'flutter' && !project.manifest.flutterDeepLinkingOff;
     const filtersDone = hasHost && hasScheme;
     const done = filtersDone && !needsFlutterMeta;
+    // init adds INTERNET to a manifest it finds; without one, print it (release builds need it).
+    const noManifest = (fw === 'flutter' || fw === 'android') && !project.manifestPath;
+    const internetXml = '<!-- Inside <manifest>, above <application> -->\n<uses-permission android:name="android.permission.INTERNET" />';
     steps.push({
       title: `Add the intent filters to ${where}`,
       done,
@@ -361,7 +364,7 @@ export function nextSteps(project, opts, installSrc) {
         : filtersDone
           ? `The intent filters for ${host} and ${scheme}:// are already there. Add this line inside your main activity:`
           : 'Inside your main activity. Keep the intent filters you already have.',
-      code: done ? undefined : [filtersDone ? null : manifestXml(opts), needsFlutterMeta ? flutterMeta : null].filter(Boolean).join('\n'),
+      code: done ? undefined : [noManifest ? internetXml : null, filtersDone ? null : manifestXml(opts), needsFlutterMeta ? flutterMeta : null].filter(Boolean).join('\n'),
       lang: 'xml',
     });
     if (fw !== 'android') {

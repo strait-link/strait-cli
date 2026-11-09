@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { main } from '../src/cli.mjs';
-import { planInit, writeFiles } from '../src/init.mjs';
+import { addInternetPermission, planInit, writeFiles } from '../src/init.mjs';
 import { installSpecs } from '../src/install.mjs';
 import { HOST, KEY, copyFixture, sink } from './helpers.mjs';
 
@@ -245,4 +245,78 @@ test('planInit + writeFiles: plan is pure, write creates folders', () => {
   assert.ok(!existsSync(plan.files[0].abs));
   writeFiles(plan);
   assert.ok(existsSync(plan.files[0].abs));
+});
+
+// Flutter's template only puts INTERNET in the debug/profile manifests, so a release build
+// can't reach Strait (QA 9 Nov 2026: reason=network, 0 rows). Kotlin templates have none at all.
+const INTERNET = '<uses-permission android:name="android.permission.INTERNET" />';
+const count = (s, sub) => s.split(sub).length - 1;
+
+test('Flutter: init adds the INTERNET permission to the main manifest, once, and says so', async () => {
+  const dir = copyFixture('flutter-app');
+  const mf = join(dir, 'android/app/src/main/AndroidManifest.xml');
+  const before = readFileSync(mf, 'utf8');
+  const r = await run(['init', dir, '--key', KEY, '--host', HOST]);
+  assert.equal(r.code, 0, r.err);
+  const after = readFileSync(mf, 'utf8');
+  assert.equal(count(after, INTERNET), 1);
+  assert.match(after, /<manifest xmlns:android="http:\/\/schemas\.android\.com\/apk\/res\/android">\n {2}<uses-permission android:name="android\.permission\.INTERNET" \/>\n {2}<application>/);
+  assert.equal(after.replace(`  ${INTERNET}\n`, ''), before, 'nothing else in the manifest changes');
+  assert.match(r.out, /Edited:\n {2}android\/app\/src\/main\/AndroidManifest\.xml {2}adds the INTERNET permission release builds need/);
+  // Second run (--force for links.dart): the manifest is left alone.
+  const again = await run(['init', dir, '--key', KEY, '--host', HOST, '--force']);
+  assert.equal(again.code, 0, again.err);
+  assert.equal(readFileSync(mf, 'utf8'), after);
+  assert.doesNotMatch(again.out, /Edited:/);
+});
+
+test('Android (Kotlin): init adds the INTERNET permission too', async () => {
+  const dir = copyFixture('android-kotlin');
+  const r = await run(['init', dir, '--key', KEY, '--host', HOST]);
+  assert.equal(r.code, 0, r.err);
+  assert.equal(count(readFileSync(join(dir, 'app/src/main/AndroidManifest.xml'), 'utf8'), INTERNET), 1);
+  assert.match(r.out, /app\/src\/main\/AndroidManifest\.xml {2}adds the INTERNET permission/);
+});
+
+test('React Native and Expo manifests are not touched (their templates already have INTERNET)', async () => {
+  const dir = copyFixture('rn-bare');
+  const r = await run(['init', dir, '--key', KEY, '--host', HOST]);
+  assert.equal(r.code, 0, r.err);
+  assert.doesNotMatch(r.out, /Edited:/);
+});
+
+test('INTERNET: --dry-run and a refused run leave the manifest alone', async () => {
+  const dir = copyFixture('flutter-app');
+  const mf = join(dir, 'android/app/src/main/AndroidManifest.xml');
+  const before = readFileSync(mf, 'utf8');
+  const dry = await run(['init', dir, '--key', KEY, '--host', HOST, '--dry-run']);
+  assert.equal(dry.code, 0, dry.err);
+  assert.equal(readFileSync(mf, 'utf8'), before);
+  assert.match(dry.out, /Would edit:\n {2}android\/app\/src\/main\/AndroidManifest\.xml {2}adds the INTERNET permission/);
+  assert.match(dry.out, /\+ {4}<uses-permission android:name="android\.permission\.INTERNET" \/>/);
+  writeFileSync(join(dir, 'lib/links.dart'), '// mine\n');
+  const refused = await run(['init', dir, '--key', KEY, '--host', HOST]);
+  assert.equal(refused.code, 2);
+  assert.equal(readFileSync(mf, 'utf8'), before);
+});
+
+test('Flutter with no manifest found: the printed manifest step carries the permission', async () => {
+  const dir = copyFixture('unknown');
+  const r = await run(['init', dir, '--key', KEY, '--host', HOST, '--framework', 'flutter', '--scheme', 'acmeflutter', '--dry-run']);
+  assert.equal(r.code, 0, r.err);
+  assert.ok(r.out.includes(INTERNET), r.out);
+  assert.doesNotMatch(r.out, /Would edit:/);
+});
+
+test('addInternetPermission: inserts after a multi-line <manifest>, keeps CRLF, skips one already there, ignores a commented-out one', () => {
+  const multi = '<?xml version="1.0" encoding="utf-8"?>\r\n<manifest\r\n    xmlns:android="http://schemas.android.com/apk/res/android"\r\n    package="a.b">\r\n\r\n    <application />\r\n</manifest>\r\n';
+  assert.equal(
+    addInternetPermission(multi),
+    '<?xml version="1.0" encoding="utf-8"?>\r\n<manifest\r\n    xmlns:android="http://schemas.android.com/apk/res/android"\r\n    package="a.b">\r\n    <uses-permission android:name="android.permission.INTERNET" />\r\n\r\n    <application />\r\n</manifest>\r\n',
+  );
+  assert.equal(addInternetPermission('<manifest>\n  <uses-permission\n      android:name="android.permission.INTERNET"/>\n</manifest>'), null);
+  const commented = '<manifest>\n<!-- <uses-permission android:name="android.permission.INTERNET" /> -->\n</manifest>';
+  assert.equal(count(addInternetPermission(commented), INTERNET), 2);
+  assert.equal(addInternetPermission('not a manifest'), null);
+  assert.equal(addInternetPermission('<!-- <manifest> -->\n<manifest a="1">\n</manifest>'), '<!-- <manifest> -->\n<manifest a="1">\n    ' + INTERNET + '\n</manifest>');
 });
