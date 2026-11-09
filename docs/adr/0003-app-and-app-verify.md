@@ -30,8 +30,8 @@ every problem with its plain-words fix, and an exit code a script or CI job can 
   publishable key); the key is never printed. The engine returns no keys, emails, webhook URLs or fetched-file text.
 - Engine text is printed with terminal control characters removed (a workspace name or host is user-controlled).
 - Read-only. The engine rate-limits verify to 6 a minute per workspace; a 429 is shown as an error, not retried.
-- `doctor` never fails silently: a key the engine refuses (or an engine that can't be reached) is printed as
-  "could not check" with the reason and makes the run exit 1, so a CI job can't pass on a check that never ran.
+- `doctor` never hides a check: a key the engine refuses (or an engine that can't be reached) is printed as
+  "could not check" with the reason. With `--strict` it also makes the run exit 1 (see the amendment).
 
 ## Architecture
 New `src/app.mjs` (fetch + format), wired in `src/cli.mjs`. No dependency, no engine change. Exit codes as
@@ -39,3 +39,11 @@ elsewhere: 0 ok, 1 a check failed / couldn't run / API said no, 2 usage problem.
 
 ## Cost
 One or two GETs per run.
+
+## Amendment (9 Nov 2026, 0.3.6, CEO call)
+A patch release must not start failing customers' CI. 0.3.5 made a secret key in the environment add the account
+checks to `doctor`'s exit code, so a CI job that set `STRAIT_SECRET_KEY` for `links` / `test` could turn red on an
+account problem unrelated to its host. From 0.3.6 `doctor` shows the account checks but exits as before (host
+checks only); `--strict` opts in to exit 1 when an account check fails or can't run. `--json`: top-level `ok`
+matches the exit code, `verify.ok` keeps the account's verdict. `strait app verify` keeps exit 1 on any fail or
+unknown (it is the explicit "check my setup" command).

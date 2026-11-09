@@ -99,8 +99,9 @@ function formatVerify(answer) {
 }
 
 /** `strait doctor`'s account block: the verify answer, or why it could not run (never a silent pass). */
-export function formatAccount(answer) {
+export function formatAccount(answer, strict = false) {
   const head = 'Account (strait app verify)';
-  if (answer?.error) return lines([head, `  Could not check: ${answer.error}`]);
-  return lines([head, ...verifyLines(answer), '', verifyVerdict(answer)]);
+  const soft = !strict && answer?.ok !== true ? ['These checks don\'t change doctor\'s exit code: add --strict to make doctor fail on them.'] : [];
+  if (answer?.error) return lines([head, `  Could not check: ${answer.error}`, ...soft]);
+  return lines([head, ...verifyLines(answer), '', verifyVerdict(answer), ...soft]);
 }

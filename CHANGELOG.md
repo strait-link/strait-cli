@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.6 (9 Nov 2026)
+
+- `strait doctor` with a secret key still shows the account checks (`strait app verify`), but they no longer change its exit code: a CI job that already sets `STRAIT_SECRET_KEY` passes or fails exactly as it did on 0.3.4. Add `--strict` to exit 1 when an account check fails or can't run. In `--json`, the top-level `ok` matches the exit code and `verify.ok` keeps the account's own verdict. `strait app verify` is unchanged (exit 1 on any fail or unknown). This replaces 0.3.5's doctor behaviour change.
+
 ## 0.3.5 (9 Nov 2026)
 
 - `strait app verify`: one command that says what's wrong with your setup and how to fix it. The same checks as Dashboard › Setup › Integration health (app details, each link domain's files fetched live, SDK reporting in and current, link opens, webhooks), one line each, with the fix under anything that isn't a pass. Exit 1 when a check fails or couldn't run, `--json` for AI agents and CI. Needs a secret key (`STRAIT_SECRET_KEY`, read or full access).

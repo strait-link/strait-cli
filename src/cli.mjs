@@ -31,6 +31,7 @@ const OPTIONS = {
     cert: { type: 'string', multiple: true },
     'secret-key': { type: 'string' },
     'api-url': { type: 'string' },
+    strict: { type: 'boolean', default: false },
     json: { type: 'boolean', default: false },
   },
   links: {
@@ -93,7 +94,8 @@ doctor options (the same checks and messages as doctor() in the SDKs)
   --cert <sha256>         Android signing certificate fingerprint (repeatable)
   --key <st_pub_live_…>   Also check the publishable key (env STRAIT_PUBLISHABLE_KEY)
   --secret-key <st_live_…>  Also run strait app verify (env STRAIT_SECRET_KEY); --host is then optional.
-                          If it can't run (refused key, no connection), doctor says so and exits 1
+                          If it can't run (refused key, no connection), doctor says so
+  --strict                Exit 1 when an account check fails or can't run (default: shown, exit unchanged)
   --api-url <url>         Engine for those checks (env STRAIT_API_URL, default https://strait.link)
   --json                  Print the reports as JSON
   With neither --android nor --ios, both files are checked and the apps they list are shown.
@@ -255,7 +257,8 @@ async function doctor({ values: v }, { out, env, io }) {
     result = await runDoctor({ host: normalizeHost(hostIn), key, android: v.android?.trim(), ios: v.ios?.trim(), certs: v.cert ?? [], fetch: fetchImpl });
   }
   if (secretIn) {
-    // A secret key adds the engine's checks (docs/adr/0003). If they can't run, say so and fail: never a silent pass.
+    // A secret key adds the engine's checks (docs/adr/0003), always shown; if they can't run, that is shown too.
+    // They change the exit code only with --strict, so a CI job that already sets the key keeps passing as before.
     try {
       const call = apiClient({ apiUrl: v['api-url'] ?? env.STRAIT_API_URL ?? DEFAULT_API_URL, key: secretKey(secretIn), fetch: fetchImpl, userAgent: `strait-cli/${CLI_VERSION}` });
       result.verify = await getVerify(call);
@@ -263,9 +266,9 @@ async function doctor({ values: v }, { out, env, io }) {
       if (!(e instanceof ApiError || e instanceof UsageError)) throw e;
       result.verify = { error: e.message };
     }
-    if (result.verify?.ok !== true) result.ok = false;
+    if (v.strict && result.verify?.ok !== true) result.ok = false;
   }
-  const text = v.json ? toJson(result) : [hostIn && formatDoctor(result), secretIn && formatAccount(result.verify)].filter(Boolean).join('\n\n');
+  const text = v.json ? toJson(result) : [hostIn && formatDoctor(result), secretIn && formatAccount(result.verify, v.strict)].filter(Boolean).join('\n\n');
   out.write(text + '\n');
   return result.ok ? 0 : 1;
 }
