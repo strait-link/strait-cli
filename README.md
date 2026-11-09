@@ -16,6 +16,7 @@ npx @straitlink/cli init                                     # set up deep links
 npx @straitlink/cli doctor --host acme.strait.link          # check the link host lists your app
 npx @straitlink/cli links create summer https://acme.com/s  # create a link (secret key in env)
 npx @straitlink/cli test                                    # key, engine and link domain: pass/fail (secret key in env)
+npx @straitlink/cli app verify                              # your whole setup, each problem with its fix (secret key in env)
 npx @straitlink/cli events add purchase                     # print the code that tracks an event
 ```
 
@@ -82,6 +83,8 @@ Android (assetlinks.json)
 | `--key` | Also check the publishable key. Env: `STRAIT_PUBLISHABLE_KEY`. Left out, the key check is skipped |
 | `--json` | The reports as JSON, for CI and agents |
 
+With a secret key (`STRAIT_SECRET_KEY` or `--secret-key`), `doctor` also runs [`strait app verify`](#whats-wrong-with-my-setup-strait-app-verify) and prints its checks under "Account"; `--host` is then optional. If those checks can't run (a refused or malformed key, no connection, the 6-a-minute limit) it says "Could not check" and exits `1`, never a silent pass. `--json` adds them as `verify`. If your CI sets `STRAIT_SECRET_KEY` and should check only the host, unset it for the doctor step (`env -u STRAIT_SECRET_KEY npx @straitlink/cli doctor --host …`).
+
 Exit codes: `0` no errors (warnings allowed), `1` a check failed, `2` usage problem. What a terminal can't see (intent filters, the Associated Domains entitlement) is checked by `doctor()` inside a debug build and by the [free tools](https://straitlink.in/tools/).
 
 ## Manage links: `strait links`
@@ -119,6 +122,30 @@ Your app's own setup (intent filters, Associated Domains): strait doctor --andro
 ```
 
 One read-only pass: the engine answers (`GET /healthz`), the secret key is valid and which workspace it belongs to, test or live (`GET /v1/workspace`), and the workspace's link domain serves `apple-app-site-association` and `assetlinks.json` listing your apps (the same checks as `strait doctor`). A failed check prints its fix; checks that need it are skipped. Exit `1` when any check fails, `2` for a missing or wrong kind of key, so it can gate a CI job. `--json` prints `{ ok, workspace, checks }`. Same key rules as `strait links`: never printed, publishable keys refused.
+
+## What's wrong with my setup? `strait app verify`
+
+```bash
+export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Secret keys (read or full access)
+npx @straitlink/cli app            # the setup Strait has: apps, link domains and their files, SDKs seen
+npx @straitlink/cli app verify     # every check, with the fix for each problem
+```
+
+```
+Strait app verify (checked 2026-11-09 17:44 UTC)
+
+  pass     Android app details are complete
+  pass     Android file served correctly on acme.strait.link
+  warn     Your iPhone build runs a Strait SDK from before 5 Nov 2026
+           Its app opens don't say which SDK version sent them, so Strait can't tell what it misses.
+           Fix: Update the Strait SDK to its current version (Dashboard › Setup shows it) and ship a new build.
+  skip     No webhooks set up
+
+2 pass, 1 warn, 0 fail, 0 unknown, 1 skip.
+No failures. Check the warnings above.
+```
+
+The same checks as Dashboard › Setup › Integration health, from the API (`GET /v1/app`, `GET /v1/app/verify`): your Android and iPhone app details, each link domain's `assetlinks.json` and `apple-app-site-association` (fetched live), whether your app has reported in the last 24 hours, whether its SDK is current, whether app opens from a link show their screen, and webhooks. Exit `0` when nothing failed, `1` when a check failed or could not run, or the API refused the key (so an AI agent or CI job can loop until it passes), `2` for a missing or non-secret key. `--json` prints the API answer as is (`{ ok, checkedAt, summary, checks: [{ id, status, title, detail, fix, host?, platform? }] }`). Nothing secret is printed: no keys, emails or webhook URLs.
 
 ## Track an event: `strait events add`
 

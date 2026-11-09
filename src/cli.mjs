@@ -11,6 +11,7 @@ import { ApiError, DEFAULT_API_URL, apiClient, linksCommand, secretKey } from '.
 import { CLI_VERSION } from './version.mjs';
 import { formatSelfTest, runSelfTest } from './selftest.mjs';
 import { eventsCommand } from './events.mjs';
+import { appCommand, formatAccount, getVerify, toJson } from './app.mjs';
 
 const OPTIONS = {
   init: {
@@ -28,6 +29,8 @@ const OPTIONS = {
     android: { type: 'string' },
     ios: { type: 'string' },
     cert: { type: 'string', multiple: true },
+    'secret-key': { type: 'string' },
+    'api-url': { type: 'string' },
     json: { type: 'boolean', default: false },
   },
   links: {
@@ -53,17 +56,24 @@ const OPTIONS = {
   events: {
     platform: { type: 'string' },
   },
+  app: {
+    'secret-key': { type: 'string' },
+    'api-url': { type: 'string' },
+    json: { type: 'boolean', default: false },
+  },
 };
 
 export const HELP = `strait: set up and check Strait deep links, and manage links
 
 Usage
   strait init [dir] [options]                 Write the Strait integration into your app
-  strait doctor --host <host> [options]       Check your link host is set up for your app
+  strait doctor [--host <host>] [options]     Check your link host (and with a secret key, your whole setup)
   strait links create <slug> <url> [options]  Create a link
   strait links list [options]                 List links
   strait links qr <slug> [options]            Save a link's QR code
   strait test [options]                       Check your key, the engine and your link domain
+  strait app [options]                        Show your app setup as Strait sees it
+  strait app verify [options]                 Check your whole setup: each problem with its fix
   strait events add <name> [dir] [options]    Print ready-to-paste code that tracks an event
 
 init options
@@ -82,6 +92,9 @@ doctor options (the same checks and messages as doctor() in the SDKs)
   --ios <bundleId>        iPhone bundle ID, e.g. com.acme.shop
   --cert <sha256>         Android signing certificate fingerprint (repeatable)
   --key <st_pub_live_…>   Also check the publishable key (env STRAIT_PUBLISHABLE_KEY)
+  --secret-key <st_live_…>  Also run strait app verify (env STRAIT_SECRET_KEY); --host is then optional.
+                          If it can't run (refused key, no connection), doctor says so and exits 1
+  --api-url <url>         Engine for those checks (env STRAIT_API_URL, default https://strait.link)
   --json                  Print the reports as JSON
   With neither --android nor --ios, both files are checked and the apps they list are shown.
   Exit 1 when a check fails.
@@ -102,6 +115,14 @@ test options
   workspace's link domain serves apple-app-site-association and assetlinks.json. Exit 1
   when a check fails (so it can run in CI), 2 for a missing or wrong kind of key.
 
+app options
+  --secret-key, --api-url   As for links (env STRAIT_SECRET_KEY, STRAIT_API_URL); a read or full key
+  --json                  Print the API answer as JSON (for agents and CI)
+  strait app prints the apps, link domains and SDKs Strait has for your workspace. strait app verify
+  runs the same checks as Dashboard › Setup › Integration health and prints each with its fix.
+  Exit 1 when a check fails or could not run (or the API refuses the key), 2 for a missing or
+  non-secret key.
+
 events options
   --platform <name>       react-native | flutter | ios | android | web (detected by default)
 
@@ -114,6 +135,7 @@ Examples
   npx @straitlink/cli doctor --host acme.strait.link --android com.acme.shop --ios com.acme.shop
   STRAIT_SECRET_KEY=st_live_… npx @straitlink/cli links create summer https://acme.com/summer
   STRAIT_SECRET_KEY=st_live_… npx @straitlink/cli test
+  STRAIT_SECRET_KEY=st_live_… npx @straitlink/cli app verify
   npx @straitlink/cli events add purchase
 `;
 
@@ -146,7 +168,7 @@ export async function main(argv, io = {}) {
   }
   if (cmd !== 'init') {
     try {
-      return await { doctor, links, test: selfTest, events }[cmd](args, { out, err, env, io });
+      return await { doctor, links, test: selfTest, events, app }[cmd](args, { out, err, env, io });
     } catch (e) {
       if (e instanceof UsageError) {
         err.write(`strait: ${e.message}\n`);
@@ -223,13 +245,39 @@ async function terminalAsker(input, output) {
 
 async function doctor({ values: v }, { out, env, io }) {
   const hostIn = v.host ?? env.STRAIT_LINK_HOST;
-  if (!hostIn) throw new UsageError('Missing --host: your link domain from Dashboard → Get started, e.g. --host acme.strait.link.');
-  const host = normalizeHost(hostIn);
-  const keyIn = v.key ?? env.STRAIT_PUBLISHABLE_KEY;
-  const key = keyIn ? String(keyIn).trim() : undefined;
-  const result = await runDoctor({ host, key, android: v.android?.trim(), ios: v.ios?.trim(), certs: v.cert ?? [], fetch: io.fetch ?? fetch });
-  out.write((v.json ? JSON.stringify(result, null, 2) : formatDoctor(result)) + '\n');
+  const secretIn = v['secret-key'] ?? env.STRAIT_SECRET_KEY;
+  if (!hostIn && !secretIn) throw new UsageError('Missing --host: your link domain from Dashboard → Get started, e.g. --host acme.strait.link. Or set STRAIT_SECRET_KEY to check your whole setup.');
+  const fetchImpl = io.fetch ?? fetch;
+  let result = { ok: true };
+  if (hostIn) {
+    const keyIn = v.key ?? env.STRAIT_PUBLISHABLE_KEY;
+    const key = keyIn ? String(keyIn).trim() : undefined;
+    result = await runDoctor({ host: normalizeHost(hostIn), key, android: v.android?.trim(), ios: v.ios?.trim(), certs: v.cert ?? [], fetch: fetchImpl });
+  }
+  if (secretIn) {
+    // A secret key adds the engine's checks (docs/adr/0003). If they can't run, say so and fail: never a silent pass.
+    try {
+      const call = apiClient({ apiUrl: v['api-url'] ?? env.STRAIT_API_URL ?? DEFAULT_API_URL, key: secretKey(secretIn), fetch: fetchImpl, userAgent: `strait-cli/${CLI_VERSION}` });
+      result.verify = await getVerify(call);
+    } catch (e) {
+      if (!(e instanceof ApiError || e instanceof UsageError)) throw e;
+      result.verify = { error: e.message };
+    }
+    if (result.verify?.ok !== true) result.ok = false;
+  }
+  const text = v.json ? toJson(result) : [hostIn && formatDoctor(result), secretIn && formatAccount(result.verify)].filter(Boolean).join('\n\n');
+  out.write(text + '\n');
   return result.ok ? 0 : 1;
+}
+
+async function app({ values: v, positionals }, { out, env, io }) {
+  const [sub, extra] = positionals;
+  if (extra !== undefined || (sub !== undefined && sub !== 'verify'))
+    throw new UsageError(`Unknown "${extra ?? sub}". strait app shows your setup; strait app verify checks it (--json for agents).`);
+  const call = apiClient({ apiUrl: v['api-url'] ?? env.STRAIT_API_URL ?? DEFAULT_API_URL, key: secretKey(v['secret-key'] ?? env.STRAIT_SECRET_KEY), fetch: io.fetch ?? fetch, userAgent: `strait-cli/${CLI_VERSION}` });
+  const { text, code } = await appCommand(sub, v, { call });
+  out.write(text + '\n');
+  return code;
 }
 
 async function selfTest({ values: v, positionals }, { out, env, io }) {

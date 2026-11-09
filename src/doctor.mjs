@@ -148,7 +148,8 @@ export function formatDoctor(result) {
   if (keyLines.length) out.push('', 'Key', ...keyLines.map(line));
   for (const p of reports) out.push('', LABEL[p], ...result[p].findings.filter((f) => !f.id.startsWith('key.')).map(line));
   const warned = reports.some((p) => result[p].findings.some((f) => f.severity === 'warn'));
-  out.push('', !result.ok ? 'Fix the errors above, then run strait doctor again.' : warned ? 'No errors. Check the warnings above.' : 'All checks passed.');
+  // The host's own verdict: a secret key's account checks (cli.mjs) have their own.
+  out.push('', reports.some((p) => !result[p].ok) ? 'Fix the errors above, then run strait doctor again.' : warned ? 'No errors. Check the warnings above.' : 'All checks passed.');
   out.push("Intent filters and the Associated Domains entitlement aren't visible from here: call doctor() in a debug build, or see https://straitlink.in/tools/.");
   return out.join('\n');
 }
