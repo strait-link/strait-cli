@@ -165,7 +165,7 @@ test('an answer that is not JSON is exit 1 with a message, in app and in doctor'
   const r = await run(['app', 'verify'], { fetch: world({ verify: html }) });
   assert.equal(r.code, 1);
   assert.match(r.err, /not JSON/);
-  const d = await run(['doctor'], { fetch: world({ verify: html }) });
+  const d = await run(['doctor', '--strict'], { fetch: world({ verify: html }) });
   assert.equal(d.code, 1);
   assert.match(d.out, /Could not check: .*not JSON/);
 });
@@ -180,12 +180,22 @@ test('strait app takes only verify', async () => {
 // doctor + a secret key: the host's files from outside, then the account checks from the engine.
 test('doctor with a secret key also runs app verify and prints each check with its fix', async () => {
   const r = await run(['doctor', '--host', HOST, '--android', 'com.acme.shop'], { fetch: world({ verify: () => Response.json(ONE_FAIL) }) });
-  assert.equal(r.code, 1, 'an account check failed');
+  assert.equal(r.code, 0, 'without --strict an account failure is shown, not an exit code (CI keeps passing)');
+  assert.match(r.out, /add --strict to make doctor fail on them/);
   assert.match(r.out, /ok\s+app\.listed\s+acme\.strait\.link lists com\.acme\.shop/);
   assert.doesNotMatch(r.out, /Fix the errors above/, "the host's own verdict is about the host");
   assert.match(r.out, /Account \(strait app verify\)/);
   assert.match(r.out, /fail\s+Android signing fingerprint missing/);
   assert.match(r.out, /Fix: Copy the SHA-256 fingerprint/);
+  const strict = await run(['doctor', '--host', HOST, '--android', 'com.acme.shop', '--strict'], { fetch: world({ verify: () => Response.json(ONE_FAIL) }) });
+  assert.equal(strict.code, 1, '--strict: an account check failed');
+  assert.doesNotMatch(strict.out, /add --strict/);
+});
+
+test('doctor without --strict: a host error still exits 1, as before', async () => {
+  const r = await run(['doctor', '--host', HOST, '--android', 'com.other.app']);
+  assert.equal(r.code, 1);
+  assert.match(r.out, /pass\s+Android app details are complete/);
 });
 
 test('doctor with a secret key and no --host: account checks only', async () => {
@@ -203,21 +213,28 @@ test('doctor --json with a secret key: { ok, host, android, verify }', async () 
   assert.equal(j.ok, true);
   assert.equal(j.host, HOST);
   assert.deepEqual(j.verify, ALL_GOOD);
-  const bad = JSON.parse((await run(['doctor', '--json'], { fetch: world({ verify: () => Response.json(ONE_FAIL) }) })).out);
+  const soft = await run(['doctor', '--json'], { fetch: world({ verify: () => Response.json(ONE_FAIL) }) });
+  assert.equal(soft.code, 0);
+  assert.equal(JSON.parse(soft.out).ok, true, 'ok matches the exit code');
+  assert.equal(JSON.parse(soft.out).verify.ok, false, "the account's own verdict is kept");
+  const bad = JSON.parse((await run(['doctor', '--json', '--strict'], { fetch: world({ verify: () => Response.json(ONE_FAIL) }) })).out);
   assert.equal(bad.ok, false);
 });
 
-test('doctor: a key the engine refuses is "could not check", never a silent pass; exit 1', async () => {
-  const r = await run(['doctor', '--host', HOST], { fetch: world({ verify: () => Response.json({ error: 'invalid API key' }, { status: 401 }) }) });
+test('doctor: a key the engine refuses is "could not check", never a silent pass; exit 1 with --strict', async () => {
+  const soft = await run(['doctor', '--host', HOST], { fetch: world({ verify: () => Response.json({ error: 'invalid API key' }, { status: 401 }) }) });
+  assert.equal(soft.code, 0);
+  assert.match(soft.out, /Could not check: .*invalid API key/);
+  const r = await run(['doctor', '--host', HOST, '--strict'], { fetch: world({ verify: () => Response.json({ error: 'invalid API key' }, { status: 401 }) }) });
   assert.equal(r.code, 1);
   assert.match(r.out, /Could not check: .*invalid API key \(HTTP 401\)/);
-  const j = JSON.parse((await run(['doctor', '--json'], { fetch: world({ verify: () => Response.json({ error: 'invalid API key' }, { status: 401 }) }) })).out);
+  const j = JSON.parse((await run(['doctor', '--json', '--strict'], { fetch: world({ verify: () => Response.json({ error: 'invalid API key' }, { status: 401 }) }) })).out);
   assert.equal(j.ok, false);
   assert.match(j.verify.error, /invalid API key/);
 });
 
 test('doctor: a malformed STRAIT_SECRET_KEY is reported, the host checks still run', async () => {
-  const r = await run(['doctor', '--host', HOST], { env: { STRAIT_SECRET_KEY: 'st_pub_live_0123456789abcdef' } });
+  const r = await run(['doctor', '--host', HOST, '--strict'], { env: { STRAIT_SECRET_KEY: 'st_pub_live_0123456789abcdef' } });
   assert.equal(r.code, 1);
   assert.match(r.out, /Could not check: .*publishable key/);
   assert.ok(r.fetch.calls.some((c) => c.url.pathname.startsWith('/.well-known/')));
@@ -234,7 +251,7 @@ test('odd engine answers never crash and never pass: null body, null entries', a
   for (const body of [null, { ok: true, checks: [null, 5] }]) {
     const r = await run(['app', 'verify'], { fetch: world({ verify: () => Response.json(body) }) });
     assert.equal(r.code, body ? 0 : 1, JSON.stringify(body));
-    const d = await run(['doctor'], { fetch: world({ verify: () => Response.json(body) }) });
+    const d = await run(['doctor', '--strict'], { fetch: world({ verify: () => Response.json(body) }) });
     assert.equal(d.code, body ? 0 : 1);
   }
   const s = await run(['app'], { fetch: world({ app: () => Response.json({ ...SETUP, domains: [null, { host: 'x.strait.link', kind: 'link', files: [null] }] }) }) });

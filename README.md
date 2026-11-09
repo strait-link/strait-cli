@@ -83,7 +83,7 @@ Android (assetlinks.json)
 | `--key` | Also check the publishable key. Env: `STRAIT_PUBLISHABLE_KEY`. Left out, the key check is skipped |
 | `--json` | The reports as JSON, for CI and agents |
 
-With a secret key (`STRAIT_SECRET_KEY` or `--secret-key`), `doctor` also runs [`strait app verify`](#whats-wrong-with-my-setup-strait-app-verify) and prints its checks under "Account"; `--host` is then optional. If those checks can't run (a refused or malformed key, no connection, the 6-a-minute limit) it says "Could not check" and exits `1`, never a silent pass. `--json` adds them as `verify`. If your CI sets `STRAIT_SECRET_KEY` and should check only the host, unset it for the doctor step (`env -u STRAIT_SECRET_KEY npx @straitlink/cli doctor --host …`).
+With a secret key (`STRAIT_SECRET_KEY` or `--secret-key`), `doctor` also runs [`strait app verify`](#whats-wrong-with-my-setup-strait-app-verify) and prints its checks under "Account"; `--host` is then optional. If those checks can't run (a refused or malformed key, no connection, the 6-a-minute limit) it says "Could not check". They are shown but don't change the exit code, so a CI job that already sets `STRAIT_SECRET_KEY` keeps passing as before; add `--strict` to exit `1` when one fails or can't run. `--json` adds them as `verify` (its own `ok` inside); the top-level `ok` matches the exit code.
 
 Exit codes: `0` no errors (warnings allowed), `1` a check failed, `2` usage problem. What a terminal can't see (intent filters, the Associated Domains entitlement) is checked by `doctor()` inside a debug build and by the [free tools](https://straitlink.in/tools/).
 
