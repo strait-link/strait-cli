@@ -23,7 +23,7 @@ if (live) {
   const secretKey = process.env.STRAIT_SECRET_KEY;
   const api = process.env.STRAIT_API ?? 'strait.link';
   if (!secretKey) {
-    console.error('\n--live needs STRAIT_SECRET_KEY (Dashboard → Settings → Secret keys).');
+    console.error('\n--live needs STRAIT_SECRET_KEY (Dashboard → Settings → Keys).');
     process.exit(2);
   }
   const steps = await measureLive({ api, secretKey });

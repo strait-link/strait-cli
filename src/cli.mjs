@@ -78,7 +78,7 @@ Usage
   strait events add <name> [dir] [options]    Print ready-to-paste code that tracks an event
 
 init options
-  --key <st_pub_live_…>   Publishable key (Dashboard → Get started)
+  --key <st_pub_live_…>   Publishable key (Dashboard → Setup → Your keys)
   --host <host>           Your link domain, e.g. acme.strait.link
   --scheme <scheme>       Your app's custom scheme, the one in Dashboard → Apps & stores,
                           e.g. acmeshop (guessed from the package name if left out)
@@ -102,7 +102,7 @@ doctor options (the same checks and messages as doctor() in the SDKs)
   Exit 1 when a check fails.
 
 links options
-  --secret-key <st_live_…>  Secret key (Dashboard → Settings → Secret keys). Prefer the
+  --secret-key <st_live_…>  Secret key (Dashboard → Settings → Keys). Prefer the
                             env STRAIT_SECRET_KEY: flags stay in your shell history
   --api-url <url>         API base (env STRAIT_API_URL, default https://strait.link)
   --title, --campaign, --tag <tag> (repeatable)   create: link details
@@ -196,7 +196,7 @@ export async function main(argv, io = {}) {
     if (canAsk && (!key || !host || !scheme)) {
       const ask = io.ask ?? (await terminalAsker(io.stdin ?? process.stdin, out));
       try {
-        key = key ?? (await askValid(ask, 'Publishable key (Dashboard → Get started, st_pub_live_…): ', normalizeKey, err));
+        key = key ?? (await askValid(ask, 'Publishable key (Dashboard → Setup → Your keys, st_pub_live_…): ', normalizeKey, err));
         host = host ?? (await askValid(ask, 'Link host (e.g. acme.strait.link): ', normalizeHost, err));
         if (!scheme) {
           const guess = suggestScheme(detectProject(dir) ?? {});
@@ -248,7 +248,7 @@ async function terminalAsker(input, output) {
 async function doctor({ values: v }, { out, env, io }) {
   const hostIn = v.host ?? env.STRAIT_LINK_HOST;
   const secretIn = v['secret-key'] ?? env.STRAIT_SECRET_KEY;
-  if (!hostIn && !secretIn) throw new UsageError('Missing --host: your link domain from Dashboard → Get started, e.g. --host acme.strait.link. Or set STRAIT_SECRET_KEY to check your whole setup.');
+  if (!hostIn && !secretIn) throw new UsageError('Missing --host: your link domain from Dashboard → Setup → Your keys, e.g. --host acme.strait.link. Or set STRAIT_SECRET_KEY to check your whole setup.');
   const fetchImpl = io.fetch ?? fetch;
   let result = { ok: true };
   if (hostIn) {

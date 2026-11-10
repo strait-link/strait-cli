@@ -48,7 +48,7 @@ export async function runSelfTest({ call, apiUrl, key, fetch: fetchImpl }) {
     checks.push(pass('key', 'Key', `valid ${mode} key${prefix ? ` ${prefix}…` : ''} for workspace "${workspace.name ?? '?'}"${access}`));
   } catch (e) {
     if (!(e instanceof ApiError)) throw e;
-    checks.push(fail('key', 'Key', e.message, 'Create a secret key in Dashboard → Settings → Secret keys and set STRAIT_SECRET_KEY.'));
+    checks.push(fail('key', 'Key', e.message, 'Create a secret key in Dashboard → Settings → Keys (https://app.straitlink.in/settings#keys) and set STRAIT_SECRET_KEY.'));
     checks.push(...DOMAIN_CHECKS.map(([id, l]) => skip(id, l, 'needs a valid key')));
     return done();
   }

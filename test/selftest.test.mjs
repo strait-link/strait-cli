@@ -65,7 +65,7 @@ test('a key the engine refuses: Key fails with the fix, domain checks are skippe
   const r = await run([], { fetch: world({ '/v1/workspace': () => Response.json({ error: 'invalid API key' }, { status: 401 }) }) });
   assert.equal(r.code, 1);
   assert.match(r.out, /fail\s+Key\s+.*invalid API key/);
-  assert.match(r.out, /Fix: .*Dashboard → Settings → Secret keys/);
+  assert.match(r.out, /Fix: .*Dashboard → Settings → Keys/);
   assert.match(r.out, /skip\s+Link domain/);
   assert.ok(!r.fetch.calls.some((c) => c.url.pathname.startsWith('/.well-known/')));
 });
@@ -99,7 +99,7 @@ test('--json prints { ok, checks } for CI; --api-url picks the engine', async ()
 test('no key, or a publishable key: usage error (exit 2) that says where to get the secret key, nothing sent', async () => {
   const none = await run([], { env: {} });
   assert.equal(none.code, 2);
-  assert.match(none.err, /Dashboard → Settings → Secret keys/);
+  assert.match(none.err, /Dashboard → Settings → Keys/);
   const pub = await run([], { env: { STRAIT_SECRET_KEY: 'st_pub_live_0123456789abcdef' } });
   assert.equal(pub.code, 2);
   assert.match(pub.err, /publishable key/);

@@ -51,7 +51,7 @@
           "id": "key.secret",
           "severity": "error",
           "title": "This is a secret key, not the publishable key",
-          "fix": "Use the publishable key (st_pub_…) from Dashboard → Get started, and revoke this secret key in Dashboard → Settings → Secret keys: it has been inside your app."
+          "fix": "Use the publishable key (st_pub_…) from Dashboard → Setup → Your keys, and revoke this secret key in Dashboard → Settings → Keys: it has been inside your app."
         },
         {
           "id": "app.listed",
@@ -80,7 +80,7 @@
           "id": "key.secret",
           "severity": "error",
           "title": "This is a secret key, not the publishable key",
-          "fix": "Use the publishable key (st_pub_…) from Dashboard → Get started, and revoke this secret key in Dashboard → Settings → Secret keys: it has been inside your app."
+          "fix": "Use the publishable key (st_pub_…) from Dashboard → Setup → Your keys, and revoke this secret key in Dashboard → Settings → Keys: it has been inside your app."
         },
         {
           "id": "app.listed",
@@ -109,7 +109,7 @@
           "id": "key.invalid",
           "severity": "error",
           "title": "Not a publishable key",
-          "fix": "Copy the publishable key (st_pub_…) from Dashboard → Get started."
+          "fix": "Copy the publishable key (st_pub_…) from Dashboard → Setup → Your keys."
         },
         {
           "id": "app.listed",
@@ -138,7 +138,7 @@
           "id": "key.invalid",
           "severity": "error",
           "title": "Not a publishable key",
-          "fix": "Copy the publishable key (st_pub_…) from Dashboard → Get started."
+          "fix": "Copy the publishable key (st_pub_…) from Dashboard → Setup → Your keys."
         },
         {
           "id": "app.listed",
@@ -173,7 +173,7 @@
           "id": "endpoint.invalid",
           "severity": "error",
           "title": "The endpoint isn't an https link domain",
-          "fix": "Set endpoint to your link domain from Dashboard → Get started, e.g. https://<handle>.strait.link."
+          "fix": "Set endpoint to your link domain from Dashboard → Setup → Your keys, e.g. https://<handle>.strait.link."
         }
       ]
     },
@@ -199,7 +199,7 @@
           "id": "endpoint.invalid",
           "severity": "error",
           "title": "The endpoint isn't an https link domain",
-          "fix": "Set endpoint to your link domain from Dashboard → Get started, e.g. https://<handle>.strait.link."
+          "fix": "Set endpoint to your link domain from Dashboard → Setup → Your keys, e.g. https://<handle>.strait.link."
         }
       ]
     },
@@ -225,7 +225,7 @@
           "id": "endpoint.invalid",
           "severity": "error",
           "title": "The endpoint isn't an https link domain",
-          "fix": "Set endpoint to your link domain from Dashboard → Get started, e.g. https://<handle>.strait.link."
+          "fix": "Set endpoint to your link domain from Dashboard → Setup → Your keys, e.g. https://<handle>.strait.link."
         }
       ]
     },
@@ -251,7 +251,7 @@
           "id": "endpoint.invalid",
           "severity": "error",
           "title": "The endpoint isn't an https link domain",
-          "fix": "Set endpoint to your link domain from Dashboard → Get started, e.g. https://<handle>.strait.link."
+          "fix": "Set endpoint to your link domain from Dashboard → Setup → Your keys, e.g. https://<handle>.strait.link."
         }
       ]
     },
@@ -271,13 +271,13 @@
           "id": "key.invalid",
           "severity": "error",
           "title": "Not a publishable key",
-          "fix": "Copy the publishable key (st_pub_…) from Dashboard → Get started."
+          "fix": "Copy the publishable key (st_pub_…) from Dashboard → Setup → Your keys."
         },
         {
           "id": "endpoint.invalid",
           "severity": "error",
           "title": "The endpoint isn't an https link domain",
-          "fix": "Set endpoint to your link domain from Dashboard → Get started, e.g. https://<handle>.strait.link."
+          "fix": "Set endpoint to your link domain from Dashboard → Setup → Your keys, e.g. https://<handle>.strait.link."
         }
       ]
     },
@@ -335,7 +335,7 @@
           "id": "host.unreachable",
           "severity": "error",
           "title": "Can't reach acme.strait.link",
-          "fix": "Check that endpoint is your link domain (Dashboard → Get started) and that this device is online."
+          "fix": "Check that endpoint is your link domain (Dashboard → Setup → Your keys) and that this device is online."
         }
       ]
     },
@@ -364,7 +364,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -393,7 +393,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve apple-app-site-association",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -422,7 +422,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -451,7 +451,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -480,7 +480,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve apple-app-site-association",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -509,7 +509,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve apple-app-site-association",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -538,7 +538,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -567,7 +567,7 @@
           "id": "app.none",
           "severity": "error",
           "title": "No Android app is set up for acme.strait.link",
-          "fix": "Fill in Dashboard → Apps & stores (package name and SHA-256 fingerprint), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Get started."
+          "fix": "Fill in Dashboard → Apps & stores (package name and SHA-256 fingerprint), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Setup → Your keys."
         }
       ]
     },
@@ -596,7 +596,7 @@
           "id": "app.none",
           "severity": "error",
           "title": "No iOS app is set up for acme.strait.link",
-          "fix": "Fill in Dashboard → Apps & stores (Team ID and bundle ID), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Get started."
+          "fix": "Fill in Dashboard → Apps & stores (Team ID and bundle ID), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Setup → Your keys."
         }
       ]
     },
@@ -625,7 +625,7 @@
           "id": "app.none",
           "severity": "error",
           "title": "No iOS app is set up for acme.strait.link",
-          "fix": "Fill in Dashboard → Apps & stores (Team ID and bundle ID), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Get started."
+          "fix": "Fill in Dashboard → Apps & stores (Team ID and bundle ID), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Setup → Your keys."
         }
       ]
     },
@@ -654,7 +654,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -683,7 +683,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -712,7 +712,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -741,7 +741,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve assetlinks.json",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -770,7 +770,7 @@
           "id": "host.file_missing",
           "severity": "error",
           "title": "acme.strait.link doesn't serve apple-app-site-association",
-          "fix": "Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there."
+          "fix": "Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there."
         }
       ]
     },
@@ -799,7 +799,7 @@
           "id": "app.none",
           "severity": "error",
           "title": "No Android app is set up for acme.strait.link",
-          "fix": "Fill in Dashboard → Apps & stores (package name and SHA-256 fingerprint), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Get started."
+          "fix": "Fill in Dashboard → Apps & stores (package name and SHA-256 fingerprint), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Setup → Your keys."
         }
       ]
     },
@@ -828,7 +828,7 @@
           "id": "app.none",
           "severity": "error",
           "title": "No Android app is set up for acme.strait.link",
-          "fix": "Fill in Dashboard → Apps & stores (package name and SHA-256 fingerprint), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Get started."
+          "fix": "Fill in Dashboard → Apps & stores (package name and SHA-256 fingerprint), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Setup → Your keys."
         }
       ]
     },
@@ -857,7 +857,7 @@
           "id": "app.none",
           "severity": "error",
           "title": "No iOS app is set up for acme.strait.link",
-          "fix": "Fill in Dashboard → Apps & stores (Team ID and bundle ID), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Get started."
+          "fix": "Fill in Dashboard → Apps & stores (Team ID and bundle ID), wait a minute, then check again. Already done? Make sure acme.strait.link is your link domain from Dashboard → Setup → Your keys."
         }
       ]
     },
