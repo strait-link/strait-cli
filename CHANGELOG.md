@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.7 (10 Nov 2026)
+
+- Every message, `--help` line and `doctor` fix now names the dashboard screens as they are: the publishable key and link domain are in **Dashboard → Setup → Your keys** (https://app.straitlink.in/setup#keys) and secret keys in **Dashboard → Settings → Keys** (https://app.straitlink.in/settings#keys). They used to say "Dashboard → Get started" and "Settings → Secret keys", screens the dashboard no longer has. The "no key" errors carry the link. A test fails if the old names come back.
+- `strait init` and `strait events add` write today's SDKs: React Native 0.11.5 (npm), Flutter 0.10.8 (pub.dev), iOS 0.11.6 (SwiftPM) and Android 0.10.6 (JitPack) (was 0.11.3, 0.10.6, 0.11.4 and 0.10.4). These carry the wider phone-number rule for `setUserId`.
+
 ## 0.3.6 (9 Nov 2026)
 
 - `strait doctor` with a secret key still shows the account checks (`strait app verify`), but they no longer change its exit code: a CI job that already sets `STRAIT_SECRET_KEY` passes or fails exactly as it did on 0.3.4. Add `--strict` to exit 1 when an account check fails or can't run. In `--json`, the top-level `ok` matches the exit code and `verify.ok` keeps the account's own verdict. `strait app verify` is unchanged (exit 1 on any fail or unknown). This replaces 0.3.5's doctor behaviour change.

@@ -39,7 +39,7 @@ Run this with a person who has not used Strait before, on a fresh React Native a
 
 | # | Step | Ends when |
 |---|---|---|
-| 1 | Sign up, name the workspace | Dashboard → Get started shows the link domain and publishable key |
+| 1 | Sign up, name the workspace | Dashboard → Setup → Your keys shows the link domain and publishable key |
 | 2 | Settings: package name + custom scheme | "Settings saved" |
 | 3 | Create the `summer` link (dashboard or curl) | The link is in the list |
 | 4 | `strait init --key … --host …` | Files written, steps printed |

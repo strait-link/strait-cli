@@ -14,7 +14,7 @@ export class ApiError extends Error {}
 /** The secret key for the link API, or a UsageError that says where to get one. Never echoes the value. */
 export function secretKey(value) {
   const k = String(value ?? '').trim().replace(/^['"]+|['"]+$/g, '').replace(/^Bearer\s+/i, '');
-  const where = 'Create one in Dashboard → Settings → Secret keys and set STRAIT_SECRET_KEY (or pass --secret-key).';
+  const where = 'Create one in Dashboard → Settings → Keys (https://app.straitlink.in/settings#keys) and set STRAIT_SECRET_KEY (or pass --secret-key).';
   if (!k) throw new UsageError(`The link API needs a secret key (st_live_…). ${where}`);
   if (k.startsWith('st_pub_')) throw new UsageError(`That is the publishable key (st_pub_…), which only works inside apps. The link API needs a secret key (st_live_…). ${where}`);
   if (!SECRET.test(k)) throw new UsageError(`That is not a secret key (st_live_… or st_test_…). ${where}`);

@@ -140,7 +140,7 @@ test('strait app verify --json: the engine answer as is, exit code from ok', asy
 test('strait app: no key, or a publishable key, is a usage error (exit 2) that says where to get one', async () => {
   const none = await run(['app', 'verify'], { env: {} });
   assert.equal(none.code, 2);
-  assert.match(none.err, /Settings → Secret keys/);
+  assert.match(none.err, /Settings → Keys/);
   assert.equal(none.fetch.calls.length, 0);
   const pub = await run(['app'], { env: { STRAIT_SECRET_KEY: 'st_pub_live_0123456789abcdef' } });
   assert.equal(pub.code, 2);

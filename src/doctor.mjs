@@ -51,12 +51,12 @@ export function doctorFindings(input) {
   const key = input.publishableKey ?? '';
   if (key.startsWith('st_pub_')) findings.push(ok('key.ok', 'Publishable key is set'));
   else if (key.startsWith('st_live_') || key.startsWith('st_test_'))
-    findings.push(err('key.secret', 'This is a secret key, not the publishable key', 'Use the publishable key (st_pub_…) from Dashboard → Get started, and revoke this secret key in Dashboard → Settings → Secret keys: it has been inside your app.'));
-  else findings.push(err('key.invalid', 'Not a publishable key', 'Copy the publishable key (st_pub_…) from Dashboard → Get started.'));
+    findings.push(err('key.secret', 'This is a secret key, not the publishable key', 'Use the publishable key (st_pub_…) from Dashboard → Setup → Your keys, and revoke this secret key in Dashboard → Settings → Keys: it has been inside your app.'));
+  else findings.push(err('key.invalid', 'Not a publishable key', 'Copy the publishable key (st_pub_…) from Dashboard → Setup → Your keys.'));
 
   const host = doctorHost(input.endpoint ?? '');
   if (!host) {
-    findings.push(err('endpoint.invalid', "The endpoint isn't an https link domain", 'Set endpoint to your link domain from Dashboard → Get started, e.g. https://<handle>.strait.link.'));
+    findings.push(err('endpoint.invalid', "The endpoint isn't an https link domain", 'Set endpoint to your link domain from Dashboard → Setup → Your keys, e.g. https://<handle>.strait.link.'));
   } else if (input.file) findings.push(...hostFindings(input, host, input.file));
   return { ok: !findings.some((f) => f.severity === 'error'), findings };
 }
@@ -71,12 +71,12 @@ const notConfigured = (file) => file.status === 404 && file.body === NOT_CONFIGU
 function hostFindings(input, host, file) {
   const android = input.platform === 'android';
   if (file.status === undefined)
-    return [err('host.unreachable', `Can't reach ${host}`, 'Check that endpoint is your link domain (Dashboard → Get started) and that this device is online.')];
+    return [err('host.unreachable', `Can't reach ${host}`, 'Check that endpoint is your link domain (Dashboard → Setup → Your keys) and that this device is online.')];
   const apps = file.status === 200 ? listedApps(input.platform, file.body ?? '') : null;
   if (!apps && !notConfigured(file))
-    return [err('host.file_missing', `${host} doesn't serve ${android ? 'assetlinks.json' : 'apple-app-site-association'}`, 'Use your Strait link domain as endpoint (Dashboard → Get started); Strait serves this file there.')];
+    return [err('host.file_missing', `${host} doesn't serve ${android ? 'assetlinks.json' : 'apple-app-site-association'}`, 'Use your Strait link domain as endpoint (Dashboard → Setup → Your keys); Strait serves this file there.')];
   if (!apps?.size)
-    return [err('app.none', `No ${android ? 'Android' : 'iOS'} app is set up for ${host}`, `Fill in Dashboard → Apps & stores (${android ? 'package name and SHA-256 fingerprint' : 'Team ID and bundle ID'}), wait a minute, then check again. Already done? Make sure ${host} is your link domain from Dashboard → Get started.`)];
+    return [err('app.none', `No ${android ? 'Android' : 'iOS'} app is set up for ${host}`, `Fill in Dashboard → Apps & stores (${android ? 'package name and SHA-256 fingerprint' : 'Team ID and bundle ID'}), wait a minute, then check again. Already done? Make sure ${host} is your link domain from Dashboard → Setup → Your keys.`)];
 
   const listed = [...apps.keys()].join(', ');
   const app = input.appId?.trim();

@@ -51,7 +51,7 @@ From a checkout of this repo: `node bin/strait.mjs init ../my-app`, or `npm link
 
 | Option | |
 |---|---|
-| `--key` | Publishable key (Dashboard → Get started). Env: `STRAIT_PUBLISHABLE_KEY` |
+| `--key` | Publishable key (Dashboard → Setup → Your keys). Env: `STRAIT_PUBLISHABLE_KEY` |
 | `--host` | Link domain, e.g. `acme.strait.link`. A pasted link works too. Env: `STRAIT_LINK_HOST` |
 | `--scheme` | Custom scheme: the one you typed in Dashboard → Apps & stores. Taken from `app.json`, or guessed from the package name (`com.acme.shop` → `acmeshop`); a guess is marked "(guessed from …)" in the output |
 | `--framework` | `react-native`, `expo`, `flutter` or `android`, to skip detection |
@@ -90,7 +90,7 @@ Exit codes: `0` no errors (warnings allowed), `1` a check failed, `2` usage prob
 ## Manage links: `strait links`
 
 ```bash
-export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Secret keys
+export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Keys
 npx @straitlink/cli links create summer https://acme.com/summer --campaign sale --tag email
 npx @straitlink/cli links list --status active --limit 20
 npx @straitlink/cli links qr summer --size 512          # writes summer.png
@@ -104,7 +104,7 @@ Exit codes: `0` done, `1` the API said no or can't be reached (its message on st
 ## Am I set up right? `strait test`
 
 ```bash
-export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Secret keys
+export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Keys
 npx @straitlink/cli test
 ```
 
@@ -126,7 +126,7 @@ One read-only pass: the engine answers (`GET /healthz`), the secret key is valid
 ## What's wrong with my setup? `strait app verify`
 
 ```bash
-export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Secret keys (read or full access)
+export STRAIT_SECRET_KEY=st_live_…        # Dashboard → Settings → Keys (read or full access)
 npx @straitlink/cli app            # the setup Strait has: apps, link domains and their files, SDKs seen
 npx @straitlink/cli app verify     # every check, with the fix for each problem
 ```

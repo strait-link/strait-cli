@@ -15,15 +15,15 @@ const EXAMPLE_BODIES = new Set(['8fK2mQx7Lp4RtZ']);
  */
 export function normalizeKey(value) {
   let k = String(value ?? '').trim().replace(/^['"]+|['"]+$/g, '');
-  if (!k) throw new UsageError('A publishable key is required (--key st_pub_live_…). Find it in Dashboard → Get started.');
+  if (!k) throw new UsageError('A publishable key is required (--key st_pub_live_…). Find it in Dashboard → Setup → Your keys (https://app.straitlink.in/setup#keys).');
   if (SECRET_KEY.test(k)) {
     throw new UsageError(
-      'That is a secret key (st_live_…). Apps must use the publishable key (st_pub_live_…) from Dashboard → Get started. ' +
-        'If the secret key was pasted somewhere public, rotate it in Dashboard → Settings → Secret keys.',
+      'That is a secret key (st_live_…). Apps must use the publishable key (st_pub_live_…) from Dashboard → Setup → Your keys. ' +
+        'If the secret key was pasted somewhere public, rotate it in Dashboard → Settings → Keys.',
     );
   }
   const m = /^st_pub_(live|test)_(.*)$/.exec(k);
-  const where = (mode = 'live') => `Copy your real one from Dashboard → Get started (the Publishable key box): st_pub_${mode}_ followed by 32 letters and numbers.`;
+  const where = (mode = 'live') => `Copy your real one from Dashboard → Setup → Your keys (the Publishable key box): st_pub_${mode}_ followed by 32 letters and numbers.`;
   if (!m) throw new UsageError(`That is not a publishable key. ${where()}`);
   const [, mode] = m;
   let rest = m[2].replace(/\.$/, ''); // a full stop copied from a sentence
@@ -42,7 +42,7 @@ export function normalizeKey(value) {
 /** "https://Acme.strait.link/summer" → "acme.strait.link". */
 export function normalizeHost(value) {
   let h = String(value ?? '').trim().toLowerCase();
-  if (!h) throw new UsageError('A link host is required (--host acme.strait.link). It is your workspace link domain in Dashboard → Get started.');
+  if (!h) throw new UsageError('A link host is required (--host acme.strait.link). It is your workspace link domain in Dashboard → Setup → Your keys.');
   h = h.replace(/^[a-z][a-z0-9+.-]*:\/\//, '').replace(/[/?#].*$/, '').replace(/\.$/, '');
   const labels = h.split('.');
   if (h.length > 253 || labels.length < 2 || !labels.every((l) => LABEL.test(l)) || !/^[a-z]{2,}$/.test(labels.at(-1))) {

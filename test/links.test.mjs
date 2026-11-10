@@ -105,7 +105,7 @@ test('no secret key: a usage error that says where to get one, no request sent',
   const r = await run(['links', 'list'], { env: {} });
   assert.equal(r.code, 2);
   assert.match(r.err, /STRAIT_SECRET_KEY/);
-  assert.match(r.err, /Dashboard → Settings → Secret keys/);
+  assert.match(r.err, /Dashboard → Settings → Keys/);
   assert.equal(r.fetch.calls.length, 0);
 });
 
